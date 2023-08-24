@@ -1,0 +1,29 @@
+{
+  "name": "alekksia",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:watch": "npm-watch start",
+    "start": "npx @google-cloud/functions-framework --target=$SCRIPT_NAME",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "watch": {
+    "start": {
+      "patterns": [
+        "**/*"
+      ],
+      "extensions": "js"
+    }
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "lodash": "^4.17.21",
+    "mongoose": "^7.4.3"
+  },
+  "devDependencies": {
+    "npm-watch": "^0.11.0"
+  }
+}
