@@ -17,71 +17,51 @@ class KnessetService {
   };
   axiosInstance = axios.create({
     baseURL: this.baseKnessetUrl,
-    transformRequest: [
-      (data, headers) => {
-        return data;
-      },
-    ],
   });
   async getKMs() {
     try {
       let { data } = await this.axiosInstance.get(
         `${this.dataBases.parliament}/KNS_Person?$filter=IsCurrent eq true`
       );
-      const dataArray = data.value;
-      while (data["odata.nextLink"]) {
-        const { data: nextData } = await this.axiosInstance.get(
-          `${this.dataBases.parliament}/${data["odata.nextLink"]}`
-        );
-        data = nextData;
-        dataArray.push(...data.value);
-      }
+      const dataArray = await this.accumulateData(data);
+
+      const persons = [];
       for (const person of dataArray) {
         const { data } = await this.axiosInstance.get(
           `${this.dataBases.parliament}/KNS_PersonToPosition()?$expand=KNS_Position,KNS_Person&$filter=PersonID eq ${person.PersonID} and IsCurrent eq true`
         );
+
         if (data.value[0].FactionName) {
           _.set(person, "faction.displayName", data.value[0].FactionName);
           _.set(person, "faction.name", data.value[0].FactionName);
           _.set(person, "faction.originId", data.value[0].FactionID);
         }
+
         const positions = data.value;
-        person.committees = [];
-        person.roles = new Set();
-        for (const position of positions) {
-          if (position.CommitteeName) {
-            await this.findOrCreateCommittee(position, person);
-          } else if (position.GovMinistryName) {
-            person.minister = {
-              ministryName: position.GovMinistryName,
-              originId: position.GovMinistryID,
-            };
-          } else {
-            person.roles.add(position.KNS_Position.PositionID);
-          }
-        }
-        await wait(1);
+        _.set(person, "positions", positions);
+
+        persons.push(person);
+
+        await wait(0.5);
       }
 
-      const mappedMks = this.mapMKs(dataArray);
-      return mappedMks;
+      return persons;
     } catch (error) {
       console.log(error);
     }
   }
 
-  async findOrCreateCommittee(position, person) {
-    const committee = await committeeRepo.findOrCreate({
-      name: position.CommitteeName,
-      originId: position.CommitteeID,
-    });
-    person.committees.push({
-      name: position.CommitteeName,
-      committeeId: new ObjectId(committee.doc._id),
-      isChairman:
-        position.KNS_Position.Description === 'יו"ר ועדה' ? true : false,
-    });
-    person.roles.add(position.KNS_Position.PositionID);
+  async accumulateData(data) {
+    const dataArray = data.value ? data.value : data;
+    while (data["odata.nextLink"]) {
+      const { data: nextData } = await this.axiosInstance.get(
+        `${this.dataBases.parliament}/${data["odata.nextLink"]}`
+      );
+      data = nextData;
+      const toPush = data.value ? data.value : data;
+      dataArray.push(...toPush);
+    }
+    return dataArray;
   }
 
   mapMKs(mksArray) {
@@ -106,26 +86,18 @@ class KnessetService {
     return roles;
   }
 
-  async getCommittees(committeesNames) {
+  async getCommittees(committeeIds) {
     try {
       const committees = [];
 
-      for (const committeesName of committeesNames) {
+      for (const committeeId of committeeIds) {
         const { data } = await this.axiosInstance.get(
-          `${this.dataBases.parliament}/KNS_Committee()&$filter=Name eq '${committeesName}'`,
-          {
-            params: {
-              $filter: `Name eq '${committeesName}'`,
-            },
-            paramsSerializer: (params) => {
-              return `$filter=${params.filter}`;
-            },
-          }
+          `${this.dataBases.parliament}/KNS_Committee(${committeeId})`
         );
-        committees.push(data.value[0]);
-        await wait(1);
+        committees.push(data);
+        await wait(0.5);
       }
-      return this.mapCommittees(committees);
+      return committees;
     } catch (error) {
       console.log(error);
     }

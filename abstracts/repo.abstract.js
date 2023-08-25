@@ -1,5 +1,3 @@
-const { Model } = require("mongoose");
-
 class BaseRepo {
   constructor(model) {
     this.model = model;
@@ -14,12 +12,28 @@ class BaseRepo {
     return await this.model.insertMany(data);
   }
 
-  async get(query) {
+  async find(query) {
     return await this.model.find(query);
+  }
+
+  async findOne(query) {
+    return await this.model.findOne(query);
   }
 
   async update(query, data) {
     return await this.model.findOneAndUpdate(query, data, { new: true });
+  }
+
+  async updateMany(data) {
+    const toPromise = [];
+    for (const item of data) {
+      toPromise.push(
+        this.model.findOneAndUpdate({ originId: item.originId }, item, {
+          new: true,
+        })
+      );
+    }
+    return await Promise.all(toPromise);
   }
 
   async delete(query) {

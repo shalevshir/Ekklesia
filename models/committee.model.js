@@ -3,12 +3,11 @@ const { default: mongoose, Schema } = require("mongoose");
 const CommitteeSchema = new Schema(
   {
     name: String,
-    displayName: String,
-    description: String,
     originId: String,
+    knessetNum: Number,
     type: {
       type: String,
-      enum: ["main", "sub", "special", "joint", "knesset"],
+      enum: ["main", "special", "joint", "knesset"],
     },
     subType: {
       type: String,
@@ -23,7 +22,6 @@ const CommitteeSchema = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Person",
     },
-    knessetNum: Number,
     members: [
       {
         type: mongoose.Schema.Types.ObjectId,
