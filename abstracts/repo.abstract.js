@@ -49,6 +49,13 @@ class BaseRepo {
       return { doc: newDoc, created: true };
     }
   }
+
+  async findAndUpdate(criteria, data) {
+    const result = await this.model.findOneAndUpdate(criteria, data, {
+      new: true,
+    });
+    return result;
+  }
 }
 
 module.exports = BaseRepo;

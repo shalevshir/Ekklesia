@@ -15,3 +15,9 @@ exports.updateCommittees = async (req, res) => {
 
   res.send("done");
 };
+
+exports.updateCommitteesMembers = async (req, res) => {
+  const persons = await personRepo.find();
+  await committeeRepo.updateCommitteesMembers(persons);
+  res.send("done");
+};

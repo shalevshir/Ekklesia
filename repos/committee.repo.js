@@ -50,6 +50,28 @@ class CommitteeRepo extends BaseRepo {
       knessetNum: committee.KnessetNum,
     }));
   }
+
+  async updateCommitteesMembers(persons) {
+    const commetteesToPeson = [];
+    for (const person of persons) {
+      for (const committee of person.committees) {
+        commetteesToPeson.push({
+          committee: committee.committeeId,
+          person: person._id,
+        });
+      }
+    }
+    for (const committeeToPerson of commetteesToPeson) {
+      await this.findAndUpdate(
+        {
+          _id: committeeToPerson.committee,
+        },
+        {
+          $addToSet: { members: committeeToPerson.person },
+        }
+      );
+    }
+  }
 }
 
 module.exports = new CommitteeRepo();
