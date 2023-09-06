@@ -90,7 +90,7 @@ class KnessetService {
     try {
       const committees = [];
 
-      for (const committeeId of committeeIds) {
+      for await (const committeeId of committeeIds) {
         const { data } = await this.axiosInstance.get(
           `${this.dataBases.parliament}/KNS_Committee(${committeeId})`
         );
@@ -109,6 +109,17 @@ class KnessetService {
         `${this.dataBases.parliament}/KNS_Committee(${committeeId})/KNS_CommitteeSessions`
       );
       return this.accumulateData(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async getCommitteeSessionTranscript(committeeSessionId) {
+    try {
+      const { data } = await this.axiosInstance.get(
+        `${this.dataBases.parliament}/KNS_CommitteeSession(${committeeSessionId})/KNS_DocumentCommitteeSessions/?$filter=GroupTypeID eq 23`
+      );
+      return data.value;
     } catch (error) {
       console.log(error);
     }

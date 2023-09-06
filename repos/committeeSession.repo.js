@@ -21,7 +21,7 @@ class CommitteeSessionsRepo extends BaseRepo {
   }
 
   async arrangeCommitteesSessions(committeesSessions) {
-    for (const committeeSession of committeesSessions) {
+    for await (const committeeSession of committeesSessions) {
       const committee = await committeeRepo.findOne({
         originId: committeeSession.CommitteeID,
       });
@@ -38,6 +38,15 @@ class CommitteeSessionsRepo extends BaseRepo {
       status: committeeSession.StatusDesc,
       sessionNumber: committeeSession.Number,
     }));
+  }
+
+  async updateCommitteesSessions(committeeSession) {
+    const committeeTranscript =
+      await knessetApiService.getCommitteeSessionTranscript(
+        committeeSession.originId
+      );
+    committeeSession.transcriptUrl = committeeTranscript;
+    await committeeSession.save();
   }
 }
 

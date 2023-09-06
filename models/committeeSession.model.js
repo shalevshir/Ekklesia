@@ -17,6 +17,7 @@ const committeeSessionSchema = new Schema(
     status: String,
     broadcastUrl: String,
     sessionUrl: String,
+    transcriptUrl: String,
     committee: {
       type: Schema.Types.ObjectId,
       ref: "Committee",
