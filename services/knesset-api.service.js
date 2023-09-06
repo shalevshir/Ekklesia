@@ -102,6 +102,17 @@ class KnessetService {
       console.log(error);
     }
   }
+
+  async getCommitteeSessions(committeeId) {
+    try {
+      const { data } = await this.axiosInstance.get(
+        `${this.dataBases.parliament}/KNS_Committee(${committeeId})/KNS_CommitteeSessions`
+      );
+      return this.accumulateData(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 module.exports = new KnessetService();

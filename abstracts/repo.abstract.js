@@ -12,6 +12,14 @@ class BaseRepo {
     return await this.model.insertMany(data);
   }
 
+  async findOrCreateMany(data) {
+    const toPromise = [];
+    for (const item of data) {
+      toPromise.push(this.findOrCreate(item));
+    }
+    return await Promise.all(toPromise);
+  }
+
   async find(query) {
     return await this.model.find(query);
   }
