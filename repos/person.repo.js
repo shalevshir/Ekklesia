@@ -17,10 +17,10 @@ class PersonRepo extends BaseRepo {
   }
 
   async arrangePersons(persons) {
-    for (const person of persons) {
+    for await (const person of persons) {
       person.committees = [];
       person.roles = new Set();
-      for (const position of person.positions) {
+      for await (const position of person.positions) {
         if (position.CommitteeName) {
           const committee = await committeeRepo.findOrCreate({
             name: position.CommitteeName,

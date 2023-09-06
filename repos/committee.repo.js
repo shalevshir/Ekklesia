@@ -31,7 +31,7 @@ class CommitteeRepo extends BaseRepo {
   }
 
   async arrangeCommittees(committees) {
-    for (const committee of committees) {
+    for await (const committee of committees) {
       if (committee.ParentCommitteeID) {
         const parentCommittee = await this.findOne({
           originId: committee.ParentCommitteeID,
@@ -61,7 +61,7 @@ class CommitteeRepo extends BaseRepo {
         });
       }
     }
-    for (const committeeToPerson of commetteesToPeson) {
+    for await (const committeeToPerson of commetteesToPeson) {
       await this.findAndUpdate(
         {
           _id: committeeToPerson.committee,

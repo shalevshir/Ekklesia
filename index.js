@@ -28,9 +28,24 @@ exports.updateCommitteesMembers = async (req, res) => {
 
 exports.fetchCommitteesSessions = async (req, res) => {
   const committees = await committeeRepo.find();
-  for (const committee of committees) {
+  for await (const committee of committees) {
     await CommitteeSessionsRepo.fetchCommitteesSessions(committee.originId);
     await wait(0.3);
   }
+  res.send("done");
+};
+
+exports.updateSessionsInCommittees = async (req, res) => {
+  const committees = await committeeRepo.find();
+  const toPromise = [];
+  for await (const committee of committees) {
+    const sessions = await CommitteeSessionsRepo.find({
+      committee: committee._id,
+    });
+    const sessionsIds = sessions.map((session) => session._id);
+    committee.sessions = sessionsIds;
+    toPromise.push(committee.save());
+  }
+  await Promise.all(toPromise);
   res.send("done");
 };
