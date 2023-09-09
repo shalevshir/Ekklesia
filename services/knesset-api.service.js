@@ -124,6 +124,17 @@ class KnessetService {
       console.log(error);
     }
   }
+
+  async getQueries() {
+    try {
+      const { data } = await this.axiosInstance.get(
+        `${this.dataBases.parliament}/KNS_Query?$filter=KnessetNum eq 25`
+      );
+      return this.accumulateData(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 module.exports = new KnessetService();

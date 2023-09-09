@@ -1,11 +1,13 @@
 const connectDB = require("./config/db");
 const committeeRepo = require("./repos/committee.repo");
 const CommitteeSessionsRepo = require("./repos/committeeSession.repo");
+const queryRepo = require("./repos/query.repo");
 const personRepo = require("./repos/person.repo");
+
 const wait = async (seconds) => {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 };
-// Connect Database
+
 connectDB();
 
 exports.fetchKms = async (req, res) => {
@@ -47,5 +49,10 @@ exports.updateSessionsInCommittees = async (req, res) => {
     toPromise.push(committee.save());
   }
   await Promise.all(toPromise);
+  res.send("done");
+};
+
+exports.fetchQueries = async (req, res) => {
+  await queryRepo.fetchQueriesFromKnesset();
   res.send("done");
 };
