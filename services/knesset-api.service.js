@@ -128,7 +128,7 @@ class KnessetService {
   async getQueries() {
     try {
       const { data } = await this.axiosInstance.get(
-        `${this.dataBases.parliament}/KNS_Query?$filter=KnessetNum eq 25`
+        `${this.dataBases.parliament}/KNS_Query?$filter=KnessetNum eq 25&$expand=KNS_DocumentQueries,KNS_GovMinistry`
       );
       return this.accumulateData(data);
     } catch (error) {

@@ -3,6 +3,7 @@ const { Schema, default: mongoose } = require("mongoose");
 const QuerySchema = new Schema({
   name: String,
   originId: String,
+  queryLink: String,
   type: {
     type: String,
     enum: [],
@@ -14,8 +15,11 @@ const QuerySchema = new Schema({
   },
   submitDate: Date,
   replyDate: Date,
-  submitter: Number,
-  replyMinister: Number,
+  submitter: {
+    type: Schema.Types.ObjectId,
+    ref: "Person",
+  },
+  replyMinister: String,
 });
 
 const Query = mongoose.model("Query", QuerySchema);
