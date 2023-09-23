@@ -16,9 +16,11 @@ const billsSchema = new Schema(
   {
     originId: String,
     name: String,
+    number: Number,
+    pNumber: Number,
     displayName: String,
+    summary: String,
     topic: String,
-    description: String,
     type: {
       type: String,
       enum: ["governmental", "private", "committee"],
@@ -29,10 +31,12 @@ const billsSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Committee",
     },
-    initiator: {
-      type: Schema.Types.ObjectId,
-      ref: "Person",
-    },
+    initiators: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Person",
+      },
+    ],
     stages: [
       {
         name: {

@@ -135,6 +135,17 @@ class KnessetService {
       console.log(error);
     }
   }
+
+  async getBills() {
+    try {
+      const { data } = await this.axiosInstance.get(
+        `${this.dataBases.parliament}/KNS_Bill?$filter=KnessetNum eq 25&$expand=KNS_BillInitiators`
+      );
+      return this.accumulateData(data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 module.exports = new KnessetService();

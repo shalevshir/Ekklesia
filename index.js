@@ -3,6 +3,7 @@ const committeeRepo = require("./repos/committee.repo");
 const CommitteeSessionsRepo = require("./repos/committeeSession.repo");
 const queryRepo = require("./repos/query.repo");
 const personRepo = require("./repos/person.repo");
+const billRepo = require("./repos/bill.repo");
 
 const wait = async (seconds) => {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -54,5 +55,10 @@ exports.updateSessionsInCommittees = async (req, res) => {
 
 exports.fetchQueries = async (req, res) => {
   await queryRepo.fetchQueriesFromKnesset();
+  res.send("done");
+};
+
+exports.fetchBills = async (req, res) => {
+  await billRepo.fetchBillsFromKnesset();
   res.send("done");
 };
