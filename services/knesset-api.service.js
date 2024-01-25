@@ -60,6 +60,7 @@ class KnessetService {
       data = nextData;
       const toPush = data.value ? data.value : data;
       dataArray.push(...toPush);
+      await wait(1)
     }
     return dataArray;
   }
@@ -144,6 +145,26 @@ class KnessetService {
       return this.accumulateData(data);
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  async getBillsLinks(billsIds) {
+    const updateData = [];
+    try{
+      for await (const billId of billsIds) {
+        const { data } = await this.axiosInstance.get(
+          `${this.dataBases.parliament}/KNS_DocumentBill?$filter=BillID eq ${billId}`
+        );
+        updateData.push({
+          originId: billId,
+          billLink: data.value && data.value.length ?
+          _.last(data.value).FilePath: null,
+        });
+        await wait(0.5);
+      }
+      return updateData;
+    } catch(error) {
+      console.log(error)
     }
   }
 }

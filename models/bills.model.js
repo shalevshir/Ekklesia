@@ -21,6 +21,7 @@ const billsSchema = new Schema(
     displayName: String,
     summary: String,
     topic: String,
+    billLink: String,
     type: {
       type: String,
       enum: ["governmental", "private", "committee"],

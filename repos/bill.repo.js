@@ -1,10 +1,9 @@
-const { ObjectId } = require("mongoose/lib/types");
 const BaseRepo = require("../abstracts/repo.abstract");
 const personRepo = require("./person.repo");
 const Bills = require("../models/bills.model");
 const knessetApiService = require("../services/knesset-api.service");
 const committeeRepo = require("./committee.repo");
-
+const _ = require("lodash");
 class BillsRepo extends BaseRepo {
   constructor() {
     super(Bills);
@@ -88,6 +87,14 @@ class BillsRepo extends BaseRepo {
       billsArranged.push(arrangedBill);
     }
     return billsArranged;
+  }
+
+  async updateBillsFromKnesset() {
+    const bills = await this.find();
+    const billsIds = bills.map((bill) => bill.originId);
+    const billsData = await knessetApiService.getBillsLinks(billsIds);
+
+    await this.updateMany(billsData);
   }
 }
 
