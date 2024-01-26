@@ -1,6 +1,6 @@
 const { Schema, default: mongoose } = require("mongoose");
 
-const votesSchema = [
+const voteSchema =
   {
     person: {
       type: Schema.Types.ObjectId,
@@ -10,8 +10,7 @@ const votesSchema = [
       type: String,
       enum: ["for", "against", "abstain", "no-vote"],
     },
-  },
-];
+  };
 const billsSchema = new Schema(
   {
     originId: String,
@@ -51,7 +50,7 @@ const billsSchema = new Schema(
         },
         description: String,
         date: Date,
-        votes: votesSchema,
+        votes: [ voteSchema ],
       },
     ],
   },
