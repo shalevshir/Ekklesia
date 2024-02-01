@@ -9,7 +9,10 @@ const personSchema = new Schema(
     firstNameHeb: String,
     lastNameHeb: String,
     age: Number,
-    gender: String,
+    gender: {
+      type: String,
+      enum:[ "male","female" ]
+    },
     roles: [
       {
         title: {
@@ -43,8 +46,8 @@ const personSchema = new Schema(
       },
     ],
     minister: {
-      ministryName: String,
-      originId: String,
+      type: Schema.Types.ObjectId,
+      ref: "Ministry",
     },
     email: String,
     originId: String,
