@@ -45,10 +45,10 @@ const personSchema = new Schema(
         isChairman: Boolean,
       },
     ],
-    minister: {
+    minister: [{
       type: Schema.Types.ObjectId,
       ref: "Ministry",
-    },
+    }],
     email: String,
     originId: String,
   },
