@@ -6,7 +6,7 @@ const mapIdToRole = {
   40: "ministerDeputy",
   41: "committeeChairman",
   42: "committeeMember",
-  43: "factionMember",
+  43: "knessetMember",
   45: "pm",
   48: "headOfFaction",
   49: "ministerReplacement",
