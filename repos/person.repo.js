@@ -3,6 +3,7 @@ const BaseRepo = require("../abstracts/repo.abstract");
 const Person = require("../models/person.model");
 const knessetApiService = require("../services/knesset-api.service");
 const committeeRepo = require("./committee.repo");
+const ministryRepo = require("./ministry.repo");
 const { mapIdToRole } = require("../types/roles.enum");
 
 class PersonRepo extends BaseRepo {
@@ -12,11 +13,11 @@ class PersonRepo extends BaseRepo {
 
   async createPersonFromKnessetApi() {
     const persons = await knessetApiService.getKMs();
-    const arrangedPersons = await this.arrangePersons(persons);
+    const arrangedPersons = await this.arrangeMks(persons);
     await this.createMany(arrangedPersons);
   }
 
-  async arrangePersons(persons) {
+  async arrangeMks(persons) {
     for await (const person of persons) {
       person.committees = [];
       person.roles = new Set();
@@ -31,14 +32,15 @@ class PersonRepo extends BaseRepo {
             name: position.CommitteeName,
             committeeId: new ObjectId(committee.doc._id),
             isChairman:
-              position.KNS_Position.Description === 'יו"ר ועדה' ? true : false,
+            position.KNS_Position && position.KNS_Position.Description === 'יו"ר ועדה' ? true : false,
           });
           person.roles.add(position.KNS_Position.PositionID);
         } else if (position.GovMinistryName) {
-          person.minister = {
-            ministryName: position.GovMinistryName,
+          const ministry = await ministryRepo.findOrCreate({
+            name: position.GovMinistryName,
             originId: position.GovMinistryID,
-          };
+          });
+          person.minister = ministry.doc._id;
         } else {
           person.roles.add(position.KNS_Position.PositionID);
         }
@@ -60,8 +62,8 @@ class PersonRepo extends BaseRepo {
     }));
   }
 
-  mapRoles(kns_positions) {
-    const roles = [...kns_positions].map((roleId) => ({
+  mapRoles(positions) {
+    const roles = [...positions].map((roleId) => ({
       title: mapIdToRole[roleId],
       isCurrent: true,
     }));

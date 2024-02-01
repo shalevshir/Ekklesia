@@ -15,9 +15,11 @@ class KnessetService {
     lobby: "Lobbyist.svc",
     mmm: "MMM.svc",
   };
+
   axiosInstance = axios.create({
     baseURL: this.baseKnessetUrl,
   });
+
   async getKMs() {
     try {
       let { data } = await this.axiosInstance.get(
@@ -27,27 +29,33 @@ class KnessetService {
 
       const persons = [];
       for (const person of dataArray) {
+        let isMinister = false
         const { data } = await this.axiosInstance.get(
           `${this.dataBases.parliament}/KNS_PersonToPosition()?$expand=KNS_Position,KNS_Person&$filter=PersonID eq ${person.PersonID} and IsCurrent eq true`
         );
-
-        if (data.value[0].FactionName) {
-          _.set(person, "faction.displayName", data.value[0].FactionName);
-          _.set(person, "faction.name", data.value[0].FactionName);
-          _.set(person, "faction.originId", data.value[0].FactionID);
+        for(const position of data.value) {
+          if(position.FactionName){
+            _.set(person, "faction.displayName", position.FactionName);
+            _.set(person, "faction.name", position.FactionName);
+            _.set(person, "faction.originId", position.FactionID);
+          }
+          if(position.GovMinistryID){
+            isMinister = true
+          }
         }
 
-        const positions = data.value;
-        _.set(person, "positions", positions);
-
-        persons.push(person);
 
         await wait(0.5);
+        if(!person.faction && !isMinister) continue;
+        const positions = data.value;
+        _.set(person, "positions", positions);
+        persons.push(person);
       }
 
       return persons;
     } catch (error) {
       console.log(error);
+      throw error;
     }
   }
 
