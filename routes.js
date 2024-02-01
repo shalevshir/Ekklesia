@@ -11,7 +11,7 @@ const wait = async (seconds) => {
   };
   
 
-exports.fetchKms = async (req, res) => {
+exports.fetchMks = async (req, res) => {
     await personRepo.createPersonFromKnessetApi();
   
     res.send("done");

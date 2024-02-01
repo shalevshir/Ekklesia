@@ -3,12 +3,11 @@ const routers = require("./routes");
 
 connectDB();
 
-// create express api service
 const express = require("express");
 const app = express();
 const port = 3000;
 
-app.get("/fetchKms", routers.fetchKms);
+app.get("/fetchMks", routers.fetchMks);
 app.get("/updateCommittees", routers.updateCommittees);
 app.get("/updateCommitteesMembers", routers.updateCommitteesMembers);
 app.get("/fetchCommitteesSessions", routers.fetchCommitteesSessions);
@@ -18,5 +17,5 @@ app.get("/fetchBills", routers.fetchBills);
 app.get("/updateBills", routers.updateBills);
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  console.log(`Ekklesia app listening at http://localhost:${port}`);
 });
