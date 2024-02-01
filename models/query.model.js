@@ -4,6 +4,7 @@ const QuerySchema = new Schema({
   name: String,
   originId: String,
   queryLink: String,
+  replyLink: String,
   type: {
     type: String,
     enum: [],
@@ -19,7 +20,10 @@ const QuerySchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Person",
   },
-  replyMinister: String,
+  replyMinistry: {
+    type: Schema.Types.ObjectId,
+    ref: "Ministry",
+  },
 });
 
 const Query = mongoose.model("Query", QuerySchema);
