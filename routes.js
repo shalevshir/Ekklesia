@@ -17,8 +17,8 @@ exports.fetchMks = async (req, res) => {
     res.send("done");
   };
   
-  exports.updateCommittees = async (req, res) => {
-    await committeeRepo.updateCommitteesFromKnessetApi();
+  exports.fetchCommittees = async (req, res) => {
+    await committeeRepo.fetchCommitteesFromKnessetApi();
   
     res.send("done");
   };

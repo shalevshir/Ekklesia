@@ -8,7 +8,7 @@ const app = express();
 const port = 3000;
 
 app.get("/fetchMks", routers.fetchMks);
-app.get("/updateCommittees", routers.updateCommittees);
+app.get("/fetchCommittees", routers.fetchCommittees);
 app.get("/updateCommitteesMembers", routers.updateCommitteesMembers);
 app.get("/fetchCommitteesSessions", routers.fetchCommitteesSessions);
 app.get("/updateSessionsInCommittees", routers.updateSessionsInCommittees);
