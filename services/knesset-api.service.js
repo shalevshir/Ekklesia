@@ -23,7 +23,7 @@ class KnessetService {
   async getKMs() {
     try {
       let { data } = await this.axiosInstance.get(
-        `${this.dataBases.parliament}/KNS_Person?$filter=IsCurrent eq true`
+        `${this.dataBases.parliament}/KNS_Person?$filter= `
       );
       const dataArray = await this.accumulateData(data);
 
@@ -95,17 +95,31 @@ class KnessetService {
     return roles;
   }
 
-  async getCommittees(committeeIds) {
+  async getMainCommittees() {
     try {
-      const committees = [];
+      
+      const { data } = await this.axiosInstance.get(
+        `${this.dataBases.parliament}/KNS_Committee()?$filter=KnessetNum eq 25 and ParentCommitteeID eq null`
+      );
+        
+      const committees = await this.accumulateData(data);
 
-      for await (const committeeId of committeeIds) {
-        const { data } = await this.axiosInstance.get(
-          `${this.dataBases.parliament}/KNS_Committee(${committeeId})`
-        );
-        committees.push(data);
-        await wait(0.5);
-      }
+      return committees;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
+  async getSubCommittees() {
+    try {
+      
+      const { data } = await this.axiosInstance.get(
+        `${this.dataBases.parliament}/KNS_Committee()?$filter=KnessetNum eq 25`
+      );
+        
+      const committees = await this.accumulateData(data);
+
       return committees;
     } catch (error) {
       console.log(error);
