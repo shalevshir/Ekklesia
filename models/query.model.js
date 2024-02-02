@@ -24,6 +24,10 @@ const QuerySchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Ministry",
   },
+  categories: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category",
+  }],
 });
 
 const Query = mongoose.model("Query", QuerySchema);
