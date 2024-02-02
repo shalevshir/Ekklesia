@@ -5,6 +5,7 @@ const CommitteeSessionsRepo = require("./repos/committeeSession.repo");
 const queryRepo = require("./repos/query.repo");
 const personRepo = require("./repos/person.repo");
 const billRepo = require("./repos/bill.repo");
+const categoriesRepo = require("./repos/category.repo");
 
 const wait = async (seconds) => {
     return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -67,3 +68,13 @@ exports.fetchMks = async (req, res) => {
     await billRepo.updateBillsFromKnesset();
     res.send("done");
   };
+
+  exports.getCategories = async (req, res) => {
+    const categories = await categoriesRepo.getAllCategories();
+    res.send(categories);
+  };
+
+  exports.getSubCategories = async (req, res) => {
+    const subCategories = await categoriesRepo.getSubCategories(req.params.categoryName);
+    res.send(subCategories);
+  }

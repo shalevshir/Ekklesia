@@ -20,8 +20,8 @@ class BaseRepo {
     return await Promise.all(toPromise);
   }
 
-  async find(query) {
-    return await this.model.find(query);
+  async find(query, options = {}) {
+    return await this.model.find(query,null, { populate: options.populate });
   }
 
   async findOne(query) {
