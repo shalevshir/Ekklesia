@@ -40,7 +40,7 @@ class PersonRepo extends BaseRepo {
             name: position.GovMinistryName,
             originId: position.GovMinistryID,
           });
-          person.minister = ministry.doc._id;
+          person.minister ? person.minister.push(ministry.doc._id) : person.minister = [ministry.doc._id];
         } else {
           person.roles.add(position.KNS_Position.PositionID);
         }
