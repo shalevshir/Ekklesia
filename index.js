@@ -7,6 +7,10 @@ const express = require("express");
 const app = express();
 const port = 3000;
 app.use(cors());
+app.use(express.json());
+app.get("/getNextQuery", routers.getNextQuery);
+app.post("/addCategoryToQuery", routers.addCategoryToQuery);
+
 app.get("/fetchMks", routers.fetchMks);
 app.get("/fetchCommittees", routers.fetchCommittees);
 app.get("/updateCommitteesMembers", routers.updateCommitteesMembers);

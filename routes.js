@@ -78,3 +78,13 @@ exports.fetchMks = async (req, res) => {
     const subCategories = await categoriesRepo.getSubCategories(req.params.categoryName);
     res.send(subCategories);
   }
+
+  exports.getNextQuery = async (req, res) => {
+    const query = await queryRepo.getNextQuery();
+    res.send(query);
+  }
+
+  exports.addCategoryToQuery = async (req, res) => {  
+    const query = await queryRepo.addCategoryToQuery(req.body.documentId, req.body.categories);
+    res.send(query);
+  }
