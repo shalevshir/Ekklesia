@@ -7,7 +7,7 @@ connectDB();
 
 const express = require("express");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static('public'));
 app.get("/getNextQuery", routers.getNextQuery);
@@ -28,5 +28,5 @@ app.get("/subCategories/:categoryName", routers.getSubCategories);
 
 
 app.listen(port, () => {
-  console.log(`Ekklesia app listening at http://localhost:${port}`);
+  console.log(`Ekklesia app listening at port ${port}`);
 });
