@@ -1,3 +1,4 @@
+require("dotenv").config();
 const connectDB = require("./config/db");
 const routers = require("./routes");
 const cors = require("cors");
@@ -8,6 +9,7 @@ const app = express();
 const port = 3000;
 app.use(cors());
 app.use(express.json());
+app.use(express.static('public'));
 app.get("/getNextQuery", routers.getNextQuery);
 app.post("/addCategoryToQuery", routers.addCategoryToQuery);
 
