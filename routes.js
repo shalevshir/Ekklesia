@@ -1,11 +1,11 @@
 
 
-const committeeRepo = require("./repos/committee.repo");
-const CommitteeSessionsRepo = require("./repos/committeeSession.repo");
-const queryRepo = require("./repos/query.repo");
-const personRepo = require("./repos/person.repo");
-const billRepo = require("./repos/bill.repo");
-const categoriesRepo = require("./repos/category.repo");
+const committeeRepo = require("./src/repos/committee.repo");
+const CommitteeSessionsRepo = require("./src/repos/committeeSession.repo");
+const queryRepo = require("./src/repos/query.repo");
+const personRepo = require("./src/repos/person.repo");
+const billRepo = require("./src/repos/bill.repo");
+const categoriesRepo = require("./src/repos/category.repo");
 
 const wait = async (seconds) => {
     return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
