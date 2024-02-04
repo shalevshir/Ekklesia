@@ -16,6 +16,10 @@
       "extensions": "js"
     }
   },
+  "engines": {
+    "node": "16.x",
+    "npm": "8.x"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
