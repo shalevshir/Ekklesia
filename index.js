@@ -3,13 +3,11 @@ if(process.env.NODE_ENV !== "production"){
 } 
 const connectDB = require("./config/db");
 const routers = require("./routes");
-const cors = require("cors");
 connectDB();
 
 const express = require("express");
 const app = express();
 const port = 3000;
-app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 app.get("/getNextQuery", routers.getNextQuery);
