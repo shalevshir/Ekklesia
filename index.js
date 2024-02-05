@@ -10,6 +10,10 @@ const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static('public'));
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+})
+
 app.get("/getNextQuery", routers.getNextQuery);
 app.post("/addCategoryToQuery", routers.addCategoryToQuery);
 
