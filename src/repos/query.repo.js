@@ -65,7 +65,7 @@ class QueryRepo extends BaseRepo {
   }
 
   async getNextQuery() {
-    const query = await this.findOne({"replyLink": {"$ne": null}, "categories": {"$size": 0}});
+    const query = await this.findOne({"categories": {"$size": 0}}, {populate: "replyMinistry"});
     return query;
   }
 

@@ -24,8 +24,8 @@ class BaseRepo {
     return await this.model.find(query,null, { populate: options.populate });
   }
 
-  async findOne(query) {
-    return await this.model.findOne(query);
+  async findOne(query, options = {}) {
+    return await this.model.findOne(query, null, { populate: options.populate });
   }
 
   async update(query, data) {
