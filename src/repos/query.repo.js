@@ -32,7 +32,7 @@ class QueryRepo extends BaseRepo {
       if(!ministry && query.KNS_GovMinistry.IsActive === true){
         throw new Error(`Ministry ${query.KNS_GovMinistry.Name} not found`);
       }
-      query.replyMinister = ministry?._id;
+      query.replyMinistry = ministry?._id;
 
       for( let document of query.KNS_DocumentQueries){
         if (document && document.GroupTypeDesc === "שאילתה") {
@@ -58,7 +58,7 @@ class QueryRepo extends BaseRepo {
       replyDate: query.ReplyMinisterDate,
       status: this.statusEnum[query.StatusID],
       submitter: query.PersonID,
-      replyMinister: query.replyMinister,
+      replyMinistry: query.replyMinistry,
       queryLink: query.queryLink,
       replyLink: query.replyLink,
     }));

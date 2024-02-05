@@ -47,7 +47,7 @@ async function fetchNextItem() {
         fetch('http://localhost:3000/getNextQuery')
             .then(response => response.json())
             .then(data => {
-                const { _id: id, name, queryLink, replyLink, type, status, submitDate, replyDate} = data;
+                const { _id: id, name, queryLink, replyLink, type, status, submitDate, replyDate, replyMinistry} = data;
                 documentId = id;
                 console.log(id)
 
@@ -55,6 +55,7 @@ async function fetchNextItem() {
                 documentJson.innerHTML = `
                 <p>Id: ${id}</p>
                 <p>Name: ${name}</p>
+                <p>Reply Ministry: ${replyMinistry}</p>
                 <p><a href="${queryLink}" target="_blank">Query Link</a></p>
                 <p><a href="${replyLink}" target="_blank">Reply Link</a></p>
                 <p>Type: ${type}</p>
