@@ -44,7 +44,7 @@ function handleChoiceSelection() {
 }
 
 async function fetchNextItem() {
-        fetch('http://localhost:3000/getNextQuery')
+        fetch('https://ekklesia-f0328075e83f.herokuapp.com/getNextQuery')
             .then(response => response.json())
             .then(data => {
                 const { _id: id, name, queryLink, replyLink, type, status, submitDate, replyDate, replyMinistry} = data;
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     await fetchNextItem();
     // Fetch categories from the server on page load
-    const response = await fetch('http://localhost:3000/categories');
+    const response = await fetch('https://ekklesia-f0328075e83f.herokuapp.com/getNextQuery/categories');
     const categories = await response.json();
 
     const categoriesListElm = document.getElementById('categoriesList');
@@ -114,7 +114,7 @@ async function submitCategory() {
     const categoryElement = document.getElementById('categoryInput');
     const subCategoryElement = document.getElementById('subCategoryInput');
 
-    const response = await fetch('http://localhost:3000/addCategoryToQuery', {
+    const response = await fetch('https://ekklesia-f0328075e83f.herokuapp.com/getNextQuery/addCategoryToQuery', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
