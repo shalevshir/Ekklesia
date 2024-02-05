@@ -55,9 +55,9 @@ async function fetchNextItem() {
                 documentJson.innerHTML = `
                 <p>Id: ${id}</p>
                 <p>Name: ${name}</p>
-                <p>Reply Ministry: ${replyMinistry}</p>
-                <p><a href="${queryLink}" target="_blank">Query Link</a></p>
-                <p><a href="${replyLink}" target="_blank">Reply Link</a></p>
+                <p>Reply Ministry: ${replyMinistry.name}</p>
+                ${queryLink?`<p><a href="${queryLink}" target="_blank">Query Link</a></p>`:'No Query Link Available'}
+                ${replyLink?`<p><a href="${replyLink}" target="_blank">Reply Link</a></p>`:'No Reply Link Available'}
                 <p>Type: ${type}</p>
                 <p>Status: ${status}</p>
                 <p>Submit Date: ${submitDate}</p>
