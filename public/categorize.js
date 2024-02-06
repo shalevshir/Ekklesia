@@ -1,5 +1,5 @@
 // Array to store selected choices
-let selectedChoices = [];
+const selectedChoices = [];
 const dataToSend = [];
 let documentId = '';
 // Function to handle choice selection
@@ -128,9 +128,7 @@ async function submitCategory() {
         console.log(response)
     }
     const responseData = await response.json();
-    categoryElement.value = ''; // Clear input after submission
-    subCategoryElement.value = ''; // Clear input after submission
     alert('Category submitted successfully');
-    dataToSend = [];
-    await fetchNextItem();
+    //refresh page
+    window.location.reload();
 }
