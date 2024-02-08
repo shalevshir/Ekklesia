@@ -46,7 +46,7 @@ function handleChoiceSelection() {
 async function fetchNextItem() {
         fetch('https://ekklesia-f0328075e83f.herokuapp.com/getNextQuery')
             .then(response => response.json())
-            .then(data => {
+            .then(async data => {
                 const { _id: id, name, queryLink, replyLink, type, status, submitDate, replyDate, replyMinistry} = data;
                 documentId = id;
                 console.log(id)
@@ -64,6 +64,14 @@ async function fetchNextItem() {
                 <p>Reply Date: ${replyDate}</p>
                 `;
 
+                if(queryLink){
+                    const queryContentStream =await  fetch(`https://ekklesia-f0328075e83f.herokuapp.com/downloadFile?url=${queryLink}`)
+                    let data = await queryContentStream.text();
+                    console.log(data)
+
+                    const queryContentElm = document.getElementById('query-content');
+                    queryContentElm.innerHTML = data
+                }
             });
     }
 // Attach event listener to subcategory input

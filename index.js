@@ -1,3 +1,4 @@
+const fs = require('fs');
 const cors = require('cors')
 if(process.env.NODE_ENV !== "production"){
   require("dotenv").config();
@@ -7,6 +8,8 @@ const routers = require("./routes");
 connectDB();
 
 const express = require("express");
+const { downloadAndSaveFile } = require('./src/services/files.service');
+const mammoth = require('mammoth');
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors({origin: ['http://localhost','https://ekklesia-f0328075e83f.herokuapp.com','http://www.ekklesia.co.il']}))
@@ -31,7 +34,28 @@ app.get("/updateBills", routers.updateBills);
 
 app.get("/categories", routers.getCategories);
 app.get("/subCategories/:categoryName", routers.getSubCategories);
+app.get("/downloadFile", async (req, res) => {
+  try {
+    const url = req.query.url;
+    const response = await downloadAndSaveFile(url);
+    const data = await mammoth.convertToHtml({path: response}).catch((err) => {
+      console.log(err);
+    }
+    );
+    // delete te file after converting
+    fs.unlink(response, (err) => {
+      if (err) {
+        console.error(err)
+        return
+      }
+    })
+    res.send(data.value);
+  } catch (error) {
+    res.status(500).send
+      ("Error downloading file:", error);
 
+  }
+});
 
 app.listen(port, () => {
   console.log(`Ekklesia app listening at port ${port}`);
