@@ -1,54 +1,57 @@
-class BaseRepo {
-  constructor(model) {
+import { InstanceType, ModelType } from "typegoose";
+
+class BaseRepo <T> {
+  model: ModelType<T>;
+  constructor(model: ModelType<T>) {
     this.model = model;
   }
 
-  async create(data) {
+  async create(data: any) {
     const item = new this.model(data);
     return await item.save();
   }
 
-  async createMany(data) {
+  async createMany(data: any[]) {
     return await this.model.insertMany(data);
   }
 
-  async findOrCreateMany(data) {
-    const toPromise = [];
+  async findOrCreateMany(data: any[]) {
+    const toPromise: Promise<any>[] = [];
     for (const item of data) {
       toPromise.push(this.findOrCreate(item));
     }
     return await Promise.all(toPromise);
   }
 
-  async find(query, options = {}) {
-    return await this.model.find(query,null, { populate: options.populate });
+  async find(query: any, options: { populate?: any } = {}): Promise<InstanceType<T>[]> {
+    return await this.model.find(query, null, { populate: options.populate });
   }
 
-  async findOne(query, options = {}) {
+  async findOne(query: any, options: { populate?: any } = {}): Promise<InstanceType<T>|null> {
     return await this.model.findOne(query, null, { populate: options.populate });
   }
 
-  async update(query, data) {
+  async update(query: any, data: any) {
     return await this.model.findOneAndUpdate(query, data, { new: true });
   }
 
-  async updateMany(data) {
-    const toPromise = [];
+  async updateMany(data: any[]) {
+    const toPromise: Promise<any>[] = [];
     for (const item of data) {
       toPromise.push(
         this.model.findOneAndUpdate({ originId: item.originId }, item, {
           new: true,
-        })
+        }).exec()
       );
     }
     return await Promise.all(toPromise);
   }
 
-  async delete(query) {
+  async delete(query: any) {
     return await this.model.findOneAndDelete(query);
   }
 
-  async findOrCreate(criteria) {
+  async findOrCreate(criteria: any) {
     const result = await this.model.findOne(criteria);
     if (result) {
       return { doc: result, created: false };
@@ -58,12 +61,20 @@ class BaseRepo {
     }
   }
 
-  async findAndUpdate(criteria, data) {
+  async findAndUpdate(criteria: any, data: any) {
     const result = await this.model.findOneAndUpdate(criteria, data, {
       new: true,
     });
     return result;
   }
+
+  async upsert(criteria: any, data: any) {
+    const result = await this.model.findOneAndUpdate(criteria, data, {
+      new: true,
+      upsert: true,
+    });
+    return result;
+  }
 }
 
-module.exports = BaseRepo;
+export default BaseRepo;

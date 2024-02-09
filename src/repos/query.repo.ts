@@ -1,30 +1,30 @@
-const { ObjectId } = require("mongoose/lib/types");
-const BaseRepo = require("../abstracts/repo.abstract");
-const Query = require("../models/query.model");
-const knessetApiService = require("../services/knesset-api.service");
-const personRepo = require("./person.repo");
-const ministryRepo = require("./ministry.repo");
-const categoryRepo = require("./category.repo");
+import BaseRepo from "../abstracts/repo.abstract";
+import QueryModel, { Query } from "../models/query.model";
+import knessetApiService from "../services/knesset-api.service";
+import personRepo from "./person.repo";
+import ministryRepo from "./ministry.repo";
+import categoryRepo from "./category.repo";
 
-class QueryRepo extends BaseRepo {
-  typesEnum = {
+class QueryRepo extends BaseRepo<Query> {
+  typesEnum: Record<number,string> = {
     48: "regular",
     50: "urgent",
     49: "direct",
   };
-  statusEnum = {
+  statusEnum: Record<number,string> = {
     6: "pending",
     9: "answered",
   };
   constructor() {
-    super(Query);
+    super(QueryModel);
   }
   async fetchQueriesFromKnesset() {
     const queriesData = await knessetApiService.getQueries();
     const arrangedQueries = await this.arrangeQueries(queriesData);
     await this.findOrCreateMany(arrangedQueries);
   }
-  async arrangeQueries(queries) {
+
+  async arrangeQueries(queries: any[]) {
     for await (const query of queries) {
       const ministry = await ministryRepo.findOne({
         name: query.KNS_GovMinistry.Name,
@@ -45,7 +45,7 @@ class QueryRepo extends BaseRepo {
 
       const person = await personRepo.findOne({ originId: query.PersonID });
       if (person) {
-        query.PersonID = new ObjectId(person._id);
+        query.PersonID = person._id;
       }else{
         delete query.PersonID;
       }
@@ -69,8 +69,11 @@ class QueryRepo extends BaseRepo {
     return query;
   }
 
-  async addCategoryToQuery(queryId, categories) {
+  async addCategoryToQuery(queryId: number, categories: any[]) {
     const queryObj = await this.findOne({_id: queryId});
+    if(!queryObj){
+      throw new Error(`Query ${queryId} not found`);
+    }
     for(const category of categories){
       
       const { subCategoryId, mainCategory, subCategoryName } = category;
@@ -78,7 +81,10 @@ class QueryRepo extends BaseRepo {
         const subCategoryObj = await categoryRepo.findOne({
           _id: subCategoryId,
         });
-        queryObj.categories.push(subCategoryObj._id);
+        if(!subCategoryObj){
+          throw new Error(`Category ${subCategoryId} not found`);
+        }
+        queryObj.categories?.push(subCategoryObj._id);
       }
       else{
         //create new category
@@ -87,7 +93,7 @@ class QueryRepo extends BaseRepo {
           isMainCategory: false,
         });
         await categoryRepo.update({name: mainCategory}, { $push: { subCategories: newCategory._id } });
-        queryObj.categories.push(newCategory._id);
+        queryObj.categories?.push(newCategory._id);
       }
     }
     await queryObj.save();
@@ -95,4 +101,4 @@ class QueryRepo extends BaseRepo {
   }
 }
 
-module.exports = new QueryRepo();
+export default new QueryRepo();

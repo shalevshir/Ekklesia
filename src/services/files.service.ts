@@ -1,8 +1,8 @@
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
 
-async function downloadAndSaveFile(url) {
+async function downloadAndSaveFile(url: string): Promise<string>{
     try {
         const response = await axios.get(url, { responseType: 'stream' });
         const fileName = path.basename(url);
@@ -21,6 +21,4 @@ async function downloadAndSaveFile(url) {
     }
 }
 
-module.exports = {
-    downloadAndSaveFile,
-};
+export { downloadAndSaveFile }

@@ -1,20 +1,24 @@
-const fs = require('fs');
-const cors = require('cors')
+import fs from 'fs';
+import cors from 'cors';
 if(process.env.NODE_ENV !== "production"){
   require("dotenv").config();
 } 
-const connectDB = require("./config/db");
-const routers = require("./routes");
+import { connectDB } from "./config/db";
+import routers from "./routes";
 connectDB();
 
-const express = require("express");
-const { downloadAndSaveFile } = require('./src/services/files.service');
-const mammoth = require('mammoth');
+import express from "express";
+import { downloadAndSaveFile } from './services/files.service';
+import mammoth from 'mammoth';
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors({origin: ['http://localhost','https://ekklesia-f0328075e83f.herokuapp.com','http://www.ekklesia.co.il']}))
 app.use(express.json());
 app.use(express.static('public'));
+app.get('/health', (req, res) => {
+  res.send('ok2');
+})
+
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 })
@@ -36,12 +40,11 @@ app.get("/categories", routers.getCategories);
 app.get("/subCategories/:categoryName", routers.getSubCategories);
 app.get("/downloadFile", async (req, res) => {
   try {
-    const url = req.query.url;
+    const url = req.query.url as string;
     const response = await downloadAndSaveFile(url);
     const data = await mammoth.convertToHtml({path: response}).catch((err) => {
       console.log(err);
-    }
-    );
+    }) as any;
     // delete te file after converting
     fs.unlink(response, (err) => {
       if (err) {
@@ -52,8 +55,7 @@ app.get("/downloadFile", async (req, res) => {
     res.send(data.value);
   } catch (error) {
     res.status(500).send
-      ("Error downloading file:", error);
-
+      ("Error downloading file:" + error);
   }
 });
 

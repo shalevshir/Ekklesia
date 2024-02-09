@@ -1,19 +1,20 @@
-const BaseRepo = require("../abstracts/repo.abstract");
-const personRepo = require("./person.repo");
-const Bills = require("../models/bills.model");
-const knessetApiService = require("../services/knesset-api.service");
-const committeeRepo = require("./committee.repo");
-const _ = require("lodash");
-class BillsRepo extends BaseRepo {
+import BaseRepo from "../abstracts/repo.abstract";
+import personRepo from "./person.repo";
+import BillModel, {Bill} from "../models/bill.model";
+import knessetApiService from "../services/knesset-api.service";
+import committeeRepo from "./committee.repo";
+import _ from "lodash";
+
+class BillsRepo extends BaseRepo<Bill> {
   constructor() {
-    super(Bills);
+    super(BillModel);
   }
-  types = {
+  types: Record<number,string>  = {
     54: "private",
     53: "governmental",
     55: "committee",
   };
-  statuses = {
+  statuses: Record<number,string> = {
     101: "preparationForFirstVote",
     104: "onTableForEarlyDiscussion",
     106: "inKnessetCommittee",
@@ -54,12 +55,12 @@ class BillsRepo extends BaseRepo {
     const arrangedBills = await this.arrangeBills(billsData);
     await this.findOrCreateMany(arrangedBills);
   }
-  async arrangeBills(bills) {
-    let billsArranged = [];
+  async arrangeBills(bills: any[]) {
+    let billsArranged: any[] = [];
     for await (const bill of bills) {
       bill.initiator = [];
-      const billType = this.types[bill.SubTypeID];
-      const billStatus = this.statuses[bill.StatusID];
+      const billType: string = this.types[bill.SubTypeID];
+      const billStatus: string = this.statuses[bill.StatusID];
       const committee = await committeeRepo.findOne({
         originId: bill.CommitteeID,
       });
@@ -90,12 +91,12 @@ class BillsRepo extends BaseRepo {
   }
 
   async updateBillsFromKnesset() {
-    const bills = await this.find();
-    const billsIds = bills.map((bill) => bill.originId);
+    const bills = await this.find({});
+    const billsIds:number[] = bills.map((bill: any) => bill.originId) as number[];
     const billsData = await knessetApiService.getBillsLinks(billsIds);
 
     await this.updateMany(billsData);
   }
 }
 
-module.exports = new BillsRepo();
+export default new BillsRepo();

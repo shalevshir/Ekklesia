@@ -1,37 +1,53 @@
 {
-  "name": "alekksia",
+  "name": "ekklesia",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:watch": "npm-watch start",
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/index.js",
+    "watch:compile": "tsc -w",
+    "watch:server": "npm-watch start",
+    "postinstall": "tsc"
   },
   "watch": {
     "start": {
       "patterns": [
-        "**/*"
+        "./dist/**/*"
       ],
       "extensions": "js"
+    },
+    "compile": {
+      "patterns": [
+        "./src/**/*"
+      ],
+      "extensions": "ts"
     }
   },
   "engines": {
-    "node": "16.x",
-    "npm": "8.x"
+    "node": "20.x",
+    "npm": "10.x"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@typegoose/typegoose": "^12.1.0",
     "axios": "^1.4.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "lodash": "^4.17.21",
     "mammoth": "^1.6.0",
-    "mongoose": "^7.4.3"
+    "mongoose": "^8.1.1",
+    "typegoose": "^5.9.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^20.11.16",
+    "concurrently": "^7.6.0",
     "dotenv": "^16.4.1",
-    "npm-watch": "^0.11.0"
+    "nodemon": "^2.0.15",
+    "npm-watch": "^0.11.0",
+    "typescript": "^4.5.4"
   }
 }

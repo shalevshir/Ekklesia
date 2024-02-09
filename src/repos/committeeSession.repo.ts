@@ -1,15 +1,16 @@
-const BaseRepo = require("../abstracts/repo.abstract");
-const CommitteeSession = require("../models/committeeSession.model");
-const knessetApiService = require("../services/knesset-api.service");
-const committeeRepo = require("./committee.repo");
-const _ = require("lodash");
+import { InstanceType } from "typegoose";
+import BaseRepo from "../abstracts/repo.abstract";
+import CommitteeSessionModel, { CommitteeSession } from "../models/committeeSession.model";
+import knessetApiService from "../services/knesset-api.service";
+import committeeRepo from "./committee.repo";
+import _ from "lodash";
 
-class CommitteeSessionsRepo extends BaseRepo {
+class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
   constructor() {
-    super(CommitteeSession);
+    super(CommitteeSessionModel);
   }
 
-  async fetchCommitteesSessions(committeeId) {
+  async fetchCommitteesSessions(committeeId: number) {
     const committeesSessions = await knessetApiService.getCommitteeSessions(
       committeeId
     );
@@ -20,11 +21,15 @@ class CommitteeSessionsRepo extends BaseRepo {
     await this.findOrCreateMany(arrangedCommitteesSessions);
   }
 
-  async arrangeCommitteesSessions(committeesSessions) {
+  async arrangeCommitteesSessions(committeesSessions: any[]) {
     for await (const committeeSession of committeesSessions) {
       const committee = await committeeRepo.findOne({
         originId: committeeSession.CommitteeID,
       });
+      if(!committee) {
+        console.log('committee not found', committeeSession.CommitteeID);
+        continue;
+      }
       _.set(committeeSession, "committee", committee._id);
     }
 
@@ -40,7 +45,11 @@ class CommitteeSessionsRepo extends BaseRepo {
     }));
   }
 
-  async updateCommitteesSessions(committeeSession) {
+  async updateCommitteesSessions(committeeSession: InstanceType<CommitteeSession>) {
+    if(!committeeSession?.originId) {
+      console.log('committeeSession not found', committeeSession);
+      throw new Error('committeeSession not found');
+    }
     const committeeTranscript =
       await knessetApiService.getCommitteeSessionTranscript(
         committeeSession.originId
@@ -50,4 +59,4 @@ class CommitteeSessionsRepo extends BaseRepo {
   }
 }
 
-module.exports = new CommitteeSessionsRepo();
+export default new CommitteeSessionsRepo();

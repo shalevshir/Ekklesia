@@ -1,0 +1,33 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+    {
+        "name": "Watch Build",
+        "type": "node",
+        //run tsc -w   
+        "request": "launch",
+        "program": "${workspaceFolder}/node_modules/.bin/tsc",
+        "args": ["-w"],
+        "console": "integratedTerminal"
+    },
+    {
+        "name": "Watch Server",
+        "type": "node",
+        "request": "launch",
+        //run npm-watch dist/index.js
+        "program": "${workspaceFolder}/node_modules/.bin/npm-watch",
+        "args": ["start"],
+        "console": "integratedTerminal"
+    }
+    ],
+    "compounds": [
+        {
+            "name": "Start Dev",
+            "configurations": ["Watch Build","Watch Server"]
+        }
+    ]
+}

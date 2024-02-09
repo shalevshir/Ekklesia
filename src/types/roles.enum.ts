@@ -1,4 +1,4 @@
-const mapIdToRole = {
+const mapIdToRole: Record<number,string> = {
   29: "headOfCoalition",
   30: "headOtCoalition",
   31: "pmDeputy",
@@ -33,4 +33,4 @@ const mapIdToRole = {
 
 const rolesEnum = Object.values(mapIdToRole);
 
-module.exports = { rolesEnum, mapIdToRole };
+export { rolesEnum, mapIdToRole };
