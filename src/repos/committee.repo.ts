@@ -52,16 +52,16 @@ class CommitteeRepo extends BaseRepo<Committee> {
   }
 
   async updateCommitteesMembers(persons: any) {
-    const commetteesToPeson = [];
+    const committeesToPerson = [];
     for (const person of persons) {
       for (const committee of person.committees) {
-        commetteesToPeson.push({
+        committeesToPerson.push({
           committee: committee.committeeId,
           person: person._id,
         });
       }
     }
-    for await (const committeeToPerson of commetteesToPeson) {
+    for await (const committeeToPerson of committeesToPerson) {
       await this.findAndUpdate(
         {
           _id: committeeToPerson.committee,

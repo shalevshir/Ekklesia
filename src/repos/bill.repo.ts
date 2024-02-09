@@ -94,7 +94,9 @@ class BillsRepo extends BaseRepo<Bill> {
     const bills = await this.find({});
     const billsIds:number[] = bills.map((bill: any) => bill.originId) as number[];
     const billsData = await knessetApiService.getBillsLinks(billsIds);
-
+    if(!billsData) {
+      throw new Error("No bills found");
+    }
     await this.updateMany(billsData);
   }
 }
