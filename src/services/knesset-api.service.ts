@@ -1,6 +1,7 @@
 import axios from "axios";
 import _ from "lodash";
 import { mapIdToRole } from "../types/roles.enum";
+import { Person } from "../models/person.model";
 
 function wait(seconds: number) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -8,6 +9,7 @@ function wait(seconds: number) {
 
 class KnessetService {
   baseKnessetUrl = "http://knesset.gov.il/Odata/";
+  baseKnessetUrlV4 = "http://knesset.gov.il/OdataV4/";
   dataBases = {
     parliament: "ParliamentInfo.svc",
     votes: "Votes.svc",
@@ -18,6 +20,34 @@ class KnessetService {
   axiosInstance = axios.create({
     baseURL: this.baseKnessetUrl,
   });
+
+  async getMksNew(): Promise<any[] | undefined>  {
+    try{
+      const { data } = await this.axiosInstance.get(
+        `${this.baseKnessetUrlV4}ParliamentInfo/KNS_PersonToPosition?$filter=KnessetNum eq 25&$expand=KNS_Person`
+      );
+      if(!data.value){
+        throw new Error("No persons found");
+      }
+      const persons = new Set();
+      for(const position of data.value) {
+        const personObj = position.KNS_Person;
+        //find person on the set
+        const existPerson = Array.from(persons).find((person: any) => person.Id === personObj.Id) as any;  
+        if(existPerson) {
+          existPerson.positions.push(position);
+        } else {
+          personObj.positions = [position];
+          persons.add(personObj);
+        }
+
+      }
+      return Array.from(persons);
+    } catch(error) {
+      throw error;
+    }
+    
+  }
 
   async getKMs() {
     try {
@@ -169,7 +199,7 @@ class KnessetService {
     }
   }
 
-  async getBillsLinks(billsIds: number[]): Promise<any> {
+  async getBillsLinks(billsIds: number[]) {
     const updateData = [];
     try{
       for await (const billId of billsIds) {

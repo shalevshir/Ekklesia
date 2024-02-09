@@ -39,12 +39,13 @@ class BaseRepo <T> {
     return await this.model.findOneAndUpdate(query, data, { new: true });
   }
 
-  async updateMany(data: any[]) {
+  async updateMany(data: any[], options: { upsert?: boolean } = {}) {
     const toPromise: Promise<any>[] = [];
     for (const item of data) {
       toPromise.push(
         this.model.findOneAndUpdate({ originId: item.originId }, item, {
           new: true,
+          upsert: options.upsert,
         }).exec()
       );
     }
@@ -68,14 +69,6 @@ class BaseRepo <T> {
   async findAndUpdate(criteria: any, data: any) {
     const result = await this.model.findOneAndUpdate(criteria, data, {
       new: true,
-    });
-    return result;
-  }
-
-  async upsert(criteria: any, data: any) {
-    const result = await this.model.findOneAndUpdate(criteria, data, {
-      new: true,
-      upsert: true,
     });
     return result;
   }

@@ -14,9 +14,14 @@ const wait = async (seconds: number) => {
   
 
 const fetchMks = async (req: Request, res: Response) => {
-  await personRepo.createPersonFromKnessetApi();
-
-  res.send("done");
+  try {
+    await personRepo.createPersonFromKnessetApi();
+  
+    res.send("done");
+  } catch (error: any) {
+    console.log(error);
+    res.status(500).send({title:"Error in fetchMks", message: error.message});
+  }
 };
 
 const fetchCommittees = async (req: Request, res: Response) => {

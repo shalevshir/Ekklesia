@@ -68,7 +68,7 @@ export class Person {
   @prop({ enum: ["male", "female"] })
   gender?: string;
 
-  @prop({ type: [ Role ] })
+  @prop({ _id: false, type: [ Role ] })
   roles?: Role[];
 
   @prop()

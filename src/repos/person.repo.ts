@@ -10,48 +10,59 @@ class PersonRepo extends BaseRepo<Person> {
   }
 
   async createPersonFromKnessetApi() {
-    const persons = await knessetApiService.getKMs();
+    const persons = await knessetApiService.getMksNew();
     if(!persons) {
       throw new Error("No persons found");
     }
     const arrangedPersons = await this.arrangeMks(persons);
-    await this.createMany(arrangedPersons);
+    await this.updateMany(arrangedPersons, { upsert:true } );
   }
 
   async arrangeMks(persons: any[]) {
     for await (const person of persons) {
-      person.committees = [];
+      const committees = []
       person.roles = new Set();
       for await (const position of person.positions) {
-            if (position.CommitteeName) {
-              const committee = await committeeRepo.findOrCreate({
-                name: position.CommitteeName,
-                originId: position.CommitteeID,
-              });
+        // if (person.roles.has(position.PositionID)) {
+        //   continue;
+        // }
+        if (position.CommitteeName) {
+          const committee = await committeeRepo.findOrCreate({
+            name: position.CommitteeName,
+            originId: position.CommitteeID,
+          });
 
-              person.committees.push({
-                name: position.CommitteeName,
-                committeeId: committee.doc._id,
-                isChairman:
-                  position.KNS_Position && position.KNS_Position.Description === 'יו"ר ועדה' ? true : false,
-              });
-              person.roles.add(position.KNS_Position.PositionID);
-            } else if (position.GovMinistryName) {
+          committees.push({
+            name: position.CommitteeName,
+            committeeId: committee.doc._id,
+            isChairman:
+              position.PositionID == 41? true : false,
+          });
+          person.roles.add(position.PositionID);
+        } else if (position.GovMinistryName) {
           const ministry = await ministryRepo.findOrCreate({
             name: position.GovMinistryName,
             originId: position.GovMinistryID,
           });
           person.minister ? person.minister.push(ministry.doc._id) : (person.minister = [ministry.doc._id]);
+        } else if(position.FactionName) {
+          person.faction = {
+            displayName: position.FactionName,
+            name: position.FactionName,
+            originId: position.FactionID,
+          };
+          person.roles.add(position.PositionID);
         } else {
-          person.roles.add(position.KNS_Position.PositionID);
+            person.roles.add(position.PositionID);
         }
       }
+      person.committees = committees;
     }
     return this.mapMKs(persons);
   }
-  mapMKs(mksArray: any[]) {
+  mapMKs(mksArray: any[]): Person[] {
     return mksArray.map((mk) => ({
-      originId: mk.PersonID,
+      originId: mk.Id,
       firstNameHeb: mk.FirstName,
       lastNameHeb: mk.LastName,
       email: mk.Email,
@@ -60,7 +71,7 @@ class PersonRepo extends BaseRepo<Person> {
       roles: this.mapRoles(mk.roles),
       committees: mk.committees,
       minister: mk.minister,
-    }));
+    } as Person));
   }
 
   mapRoles(positions: Set<number>) {
