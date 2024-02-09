@@ -9,20 +9,6 @@
     "watch:server": "npm-watch start",
     "postinstall": "tsc"
   },
-  "watch": {
-    "start": {
-      "patterns": [
-        "./dist/**/*"
-      ],
-      "extensions": "js"
-    },
-    "compile": {
-      "patterns": [
-        "./src/**/*"
-      ],
-      "extensions": "ts"
-    }
-  },
   "engines": {
     "node": "20.x",
     "npm": "10.x"
