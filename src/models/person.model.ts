@@ -1,7 +1,6 @@
 import { prop, getModelForClass, Ref, modelOptions } from "@typegoose/typegoose";
 import { rolesEnum } from "../types/roles.enum";
 import { Ministry } from "./ministry.model";
-import { ModelType } from "../abstracts/repo.abstract";
 
 class Role {
   @prop({ enum: rolesEnum })
@@ -94,6 +93,6 @@ export class Person {
 }
 
 
-const PersonModel = getModelForClass(Person) as ModelType<Person>;
+const PersonModel = getModelForClass(Person);
 
 export default PersonModel;

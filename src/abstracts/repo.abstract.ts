@@ -1,45 +1,36 @@
 import { ReturnModelType } from "@typegoose/typegoose";
 import { DocumentType } from "@typegoose/typegoose";
 import { AnyParamConstructor } from "@typegoose/typegoose/lib/types";
-
-export type ModelType<T> = ReturnModelType<AnyParamConstructor<T>>
+import { FilterQuery } from 'mongoose'
 
 class BaseRepo <T> {
-  model: ModelType<T>;
-  constructor(model: ModelType<T>) {
+  model: ReturnModelType<AnyParamConstructor<T>>;
+  constructor(model: ReturnModelType<AnyParamConstructor<T>>) {
     this.model = model;
   }
 
-  async create(data: any) {
+  async create(data: FilterQuery<T>) {
     const item = new this.model(data);
     return await item.save();
   }
 
-  async createMany(data: any[]) {
+  async createMany(data: FilterQuery<T>[]) {
     return await this.model.insertMany(data);
   }
 
-  async findOrCreateMany(data: any[]) {
-    const toPromise: Promise<any>[] = [];
-    for (const item of data) {
-      toPromise.push(this.findOrCreate(item));
-    }
-    return await Promise.all(toPromise);
-  }
-
-  async find(query: any, options: { populate?: any } = {}): Promise<Array<DocumentType<T & { populate?: any }>>> {
+  async find(query: FilterQuery<T>, options: { populate?: any } = {}): Promise<Array<DocumentType<T & { populate?: any }>>> {
     return await this.model.find(query, null, { populate: options.populate });
   }
 
-  async findOne(query: any, options: { populate?: any } = {}): Promise<DocumentType<T>|null> {
+  async findOne(query: FilterQuery<T>, options: { populate?: any } = {}): Promise<DocumentType<T>|null> {
     return await this.model.findOne(query, null, { populate: options.populate });
   }
 
-  async update(query: any, data: any) {
+  async update(query: FilterQuery<T>, data: any) {
     return await this.model.findOneAndUpdate(query, data, { new: true });
   }
 
-  async updateMany(data: any[], options: { upsert?: boolean } = {}) {
+  async updateMany(data: FilterQuery<T>[], options: { upsert?: boolean } = {}) {
     const toPromise: Promise<any>[] = [];
     for (const item of data) {
       toPromise.push(
@@ -52,11 +43,11 @@ class BaseRepo <T> {
     return await Promise.all(toPromise);
   }
 
-  async delete(query: any) {
+  async delete(query: FilterQuery<T>) {
     return await this.model.findOneAndDelete(query);
   }
 
-  async findOrCreate(criteria: any) {
+  async findOrCreate(criteria: FilterQuery<T>) {
     const result = await this.model.findOne(criteria);
     if (result) {
       return { doc: result, created: false };
@@ -66,7 +57,7 @@ class BaseRepo <T> {
     }
   }
 
-  async findAndUpdate(criteria: any, data: any) {
+  async findAndUpdate(criteria: FilterQuery<T>, data: FilterQuery<T>) {
     const result = await this.model.findOneAndUpdate(criteria, data, {
       new: true,
     });

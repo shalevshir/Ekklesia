@@ -2,7 +2,6 @@ import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose'
 import { Person } from './person.model';
 import { CommitteeSession } from './committeeSession.model';
 import { Bill } from './bill.model';
-import { ModelType } from '../abstracts/repo.abstract';
 
 enum CommitteeType {
   Main = 'main',
@@ -53,5 +52,5 @@ export class Committee {
   bills?: Ref<Bill>[];
 }
 
-const CommitteeModel = getModelForClass(Committee) as ModelType<Committee>;
+const CommitteeModel = getModelForClass(Committee);
 export default CommitteeModel;

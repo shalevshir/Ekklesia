@@ -18,7 +18,7 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
       committeesSessions
     );
 
-    await this.findOrCreateMany(arrangedCommitteesSessions);
+    await this.findOrCreate(arrangedCommitteesSessions);
   }
 
   async arrangeCommitteesSessions(committeesSessions: any[]) {

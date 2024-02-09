@@ -21,7 +21,7 @@ class QueryRepo extends BaseRepo<Query> {
   async fetchQueriesFromKnesset() {
     const queriesData = await knessetApiService.getQueries();
     const arrangedQueries = await this.arrangeQueries(queriesData);
-    await this.findOrCreateMany(arrangedQueries);
+    await this.findOrCreate(arrangedQueries);
   }
 
   async arrangeQueries(queries: any[]) {

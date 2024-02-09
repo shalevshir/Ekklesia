@@ -23,11 +23,11 @@ class CommitteeRepo extends BaseRepo<Committee> {
   async fetchCommitteesFromKnessetApi() {
     const mainCommitteesFromApi = await knessetApiService.getMainCommittees();
     const arrangedCommittees = await this.arrangeCommittees(mainCommitteesFromApi);
-    await this.findOrCreateMany(arrangedCommittees);
+    await this.findOrCreate(arrangedCommittees);
     
     const subCommitteesFromApi = await knessetApiService.getSubCommittees();
     const arrangedSubCommittees = await this.arrangeCommittees(subCommitteesFromApi);
-    await this.findOrCreateMany(arrangedSubCommittees);
+    await this.findOrCreate(arrangedSubCommittees);
   }
 
   async arrangeCommittees(committees: any[]) {

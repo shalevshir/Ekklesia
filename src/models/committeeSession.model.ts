@@ -3,7 +3,6 @@ import { Committee } from "./committee.model";
 import { Bill } from "./bill.model";
 import { Person } from "./person.model";
 import { Category } from "./category.model";
-import { ModelType } from "../abstracts/repo.abstract";
 
 enum SessionType {
   Open = "open",
@@ -67,6 +66,6 @@ export class CommitteeSession {
   categories?: Ref<Category>[];
 }
 
-const CommitteeSessionModel = getModelForClass(CommitteeSession) as ModelType<CommitteeSession>;
+const CommitteeSessionModel = getModelForClass(CommitteeSession);
 
 export default CommitteeSessionModel;

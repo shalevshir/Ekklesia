@@ -3,7 +3,6 @@ import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import { Person } from "./person.model";
 import { Ministry } from "./ministry.model";
 import { Category } from "./category.model";
-import { ModelType } from "../abstracts/repo.abstract";
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Query extends TimeStamps {
@@ -44,6 +43,6 @@ export class Query extends TimeStamps {
   categories!: Ref<Category>[];
 }
 
-const QueryModel = getModelForClass(Query) as ModelType<Query>;
+const QueryModel = getModelForClass(Query);
 
 export default QueryModel;

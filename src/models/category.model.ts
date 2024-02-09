@@ -1,17 +1,16 @@
 import { prop, getModelForClass, Ref, modelOptions } from "@typegoose/typegoose";
 import { Committee } from "./committee.model";
-import { ModelType } from "../abstracts/repo.abstract";
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Category {
-    @prop()
+    @prop({ required:true })
     name!: string;
 
     @prop()
-    description!: string;
+    description?: string;
 
     @prop()
-    icon!: string;
+    icon?: string;
 
     @prop()
     isMainCategory!: boolean;
@@ -23,6 +22,6 @@ export class Category {
     committee?: Ref<Committee>;
 }
 
-const CategoryModel = getModelForClass(Category) as ModelType<Category>;
+const CategoryModel = getModelForClass(Category)
 
 export default CategoryModel;

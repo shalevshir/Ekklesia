@@ -1,8 +1,6 @@
 import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose';
-import { Types } from 'mongoose';
 import { Person } from './person.model';
 import { Committee } from './committee.model';
-import { ModelType } from '../abstracts/repo.abstract';
 import { Category } from './category.model';
 
 enum Vote {
@@ -82,6 +80,6 @@ export class Bill {
   categories?: Ref<Category>[];
 }
 
-const BillModel = getModelForClass(Bill) as ModelType<Bill>;
+const BillModel = getModelForClass(Bill)
 
 export default BillModel;

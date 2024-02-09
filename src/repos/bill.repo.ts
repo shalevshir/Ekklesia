@@ -53,7 +53,7 @@ class BillsRepo extends BaseRepo<Bill> {
   async fetchBillsFromKnesset() {
     const billsData = await knessetApiService.getBills();
     const arrangedBills = await this.arrangeBills(billsData);
-    await this.findOrCreateMany(arrangedBills);
+    await this.findOrCreate(arrangedBills);
   }
   async arrangeBills(bills: any[]) {
     let billsArranged: any[] = [];
