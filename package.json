@@ -7,7 +7,7 @@
     "start": "node dist/index.js",
     "watch:compile": "tsc -w",
     "watch:server": "npm-watch start",
-    "postinstall": "tsc"
+    "build": "tsc"
   },
   "engines": {
     "node": "20.x",
