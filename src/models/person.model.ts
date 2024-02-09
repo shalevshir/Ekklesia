@@ -1,7 +1,7 @@
 import { prop, getModelForClass, Ref, modelOptions } from "@typegoose/typegoose";
 import { rolesEnum } from "../types/roles.enum";
-import { ModelType } from "typegoose";
 import { Ministry } from "./ministry.model";
+import { ModelType } from "../abstracts/repo.abstract";
 
 class Block {
   @prop({ enum: ["coalition", "opposition"] })
@@ -54,7 +54,7 @@ export class Person {
   @prop({ enum: ["male", "female"] })
   gender?: string;
 
-  @prop({ type: () => [Role] })
+  @prop({ type: Array<Role> })
   roles?: Role[];
 
   @prop()
@@ -66,10 +66,10 @@ export class Person {
   @prop({ _id: false })
   faction?: Faction;
 
-  @prop({ type: () => [Committee] })
+  @prop({ type: Array<Committee> })
   committees?: Committee[];
 
-  @prop({ type: () => [Ministry] })
+  @prop({ type: Array<Ministry> })
   minister?: Ref<Ministry>[];
 
   @prop()
@@ -94,6 +94,6 @@ class Role {
 }
 
 
-const PersonModel = getModelForClass(Person) as unknown as ModelType<Person>;
+const PersonModel = getModelForClass(Person) as ModelType<Person>;
 
 export default PersonModel;

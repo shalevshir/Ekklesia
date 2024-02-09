@@ -1,4 +1,4 @@
-import { InstanceType } from "typegoose";
+import { DocumentType } from "@typegoose/typegoose";
 import BaseRepo from "../abstracts/repo.abstract";
 import CommitteeSessionModel, { CommitteeSession } from "../models/committeeSession.model";
 import knessetApiService from "../services/knesset-api.service";
@@ -45,7 +45,7 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
     }));
   }
 
-  async updateCommitteesSessions(committeeSession: InstanceType<CommitteeSession>) {
+  async updateCommitteesSessions(committeeSession: DocumentType<CommitteeSession>) {
     if(!committeeSession?.originId) {
       console.log('committeeSession not found', committeeSession);
       throw new Error('committeeSession not found');

@@ -2,7 +2,8 @@ import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose'
 import { Types } from 'mongoose';
 import { Person } from './person.model';
 import { Committee } from './committee.model';
-import { ModelType } from 'typegoose';
+import { ModelType } from '../abstracts/repo.abstract';
+import { Category } from './category.model';
 
 enum Vote {
   FOR = 'for',
@@ -12,8 +13,8 @@ enum Vote {
 }
 
 class VoteSchema {
-  @prop({ ref: 'Person' })
-  person?: Ref<Person>;
+  @prop({ required:true, ref: Person })
+  person!: Ref<Person>;
 
   @prop({ enum: Vote, default: Vote.NO_VOTE})
   vote?: Vote;
@@ -30,16 +31,16 @@ class StageSchema {
   @prop()
   date?: Date;
 
-  @prop({ type: () => [VoteSchema] })
+  @prop({ type: Array<VoteSchema> })
   votes?: VoteSchema[];
 }
 
 export class Bill {
   @prop({ required: true })
-  originId?: string;
+  originId!: string;
 
-  @prop()
-  name?: string;
+  @prop({ required: true })
+  name!: string;
 
   @prop()
   number?: number;
@@ -68,19 +69,19 @@ export class Bill {
   @prop()
   date?: Date;
 
-  @prop({ ref: 'Committee' })
+  @prop({ ref: Committee })
   committee?: Ref<Committee>;
 
-  @prop({ ref: 'Person' })
+  @prop({ ref: Array<Person> })
   initiators?: Ref<Person>[];
 
-  @prop({ type: () => [StageSchema] })
+  @prop({ type: Array<StageSchema> })
   stages?: StageSchema[];
 
-  @prop({ ref: 'Category' })
-  categories?: Types.ObjectId[];
+  @prop({ ref: Array<Category> })
+  categories?: Ref<Category>[];
 }
 
-const BillModel = getModelForClass(Bill) as unknown as ModelType<Bill>;
+const BillModel = getModelForClass(Bill) as ModelType<Bill>;
 
 export default BillModel;

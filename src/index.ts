@@ -16,7 +16,7 @@ app.use(cors({origin: ['http://localhost','https://ekklesia-f0328075e83f.herokua
 app.use(express.json());
 app.use(express.static('public'));
 app.get('/health', (req, res) => {
-  res.send('ok2');
+  res.send('ok12');
 })
 
 app.get('/', (req, res) => {

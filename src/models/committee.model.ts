@@ -2,7 +2,7 @@ import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose'
 import { Person } from './person.model';
 import { CommitteeSession } from './committeeSession.model';
 import { Bill } from './bill.model';
-import { ModelType } from 'typegoose';
+import { ModelType } from '../abstracts/repo.abstract';
 
 enum CommitteeType {
   Main = 'main',
@@ -20,10 +20,10 @@ enum CommitteeSubType {
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Committee {
   @prop({ required: true, unique: true, type: Number })
-  originId: number = 0;
+  originId!: number;
 
-  @prop()
-  name?: string;
+  @prop({ required: true })
+  name!: string;
 
   @prop()
   knessetNum?: number;
@@ -53,6 +53,5 @@ export class Committee {
   bills?: Ref<Bill>[];
 }
 
-const CommitteeModel = getModelForClass(Committee) as unknown as ModelType<Committee>;
-
+const CommitteeModel = getModelForClass(Committee) as ModelType<Committee>;
 export default CommitteeModel;

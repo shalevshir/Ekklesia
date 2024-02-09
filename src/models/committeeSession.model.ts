@@ -3,8 +3,7 @@ import { Committee } from "./committee.model";
 import { Bill } from "./bill.model";
 import { Person } from "./person.model";
 import { Category } from "./category.model";
-import { AnyParamConstructor } from "@typegoose/typegoose/lib/types";
-import { ModelType } from "typegoose";
+import { ModelType } from "../abstracts/repo.abstract";
 
 enum SessionType {
   Open = "open",
@@ -20,8 +19,8 @@ enum AttendeeRole {
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class CommitteeSession {
-  @prop({ unique: true })
-  originId?: number;
+  @prop({ unique: true, required: true, type: Number})
+  originId!: number;
 
   @prop({ type: Date })
   date?: Date;
@@ -47,10 +46,10 @@ export class CommitteeSession {
   @prop()
   transcriptUrl?: string;
 
-  @prop({ ref: () => Committee })
+  @prop({ ref: Committee })
   committee?: Ref<Committee>;
 
-  @prop({ ref: () => Bill })
+  @prop({ ref: Bill })
   bills?: Ref<Bill>[];
 
   @prop({ _id: false })
@@ -59,10 +58,10 @@ export class CommitteeSession {
     role: AttendeeRole;
   }[];
 
-  @prop({ ref: () => Category })
+  @prop({ ref: Category })
   categories?: Ref<Category>[];
 }
 
-const CommitteeSessionModel = getModelForClass(CommitteeSession) as unknown as ModelType<CommitteeSession>;
+const CommitteeSessionModel = getModelForClass(CommitteeSession) as ModelType<CommitteeSession>;
 
 export default CommitteeSessionModel;

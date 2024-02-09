@@ -1,6 +1,6 @@
-import { prop, getModelForClass, modelOptions } from "@typegoose/typegoose";
-import BaseRepo from "../abstracts/repo.abstract";
-import { ModelType } from "typegoose";
+import { prop, getModelForClass, modelOptions, ReturnModelType } from "@typegoose/typegoose";
+import BaseRepo, { ModelType } from "../abstracts/repo.abstract";
+import { AnyParamConstructor } from "@typegoose/typegoose/lib/types";
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 class Agenda extends BaseRepo<Agenda> {
@@ -11,4 +11,6 @@ class Agenda extends BaseRepo<Agenda> {
   name!: string;
 }
 
-export const AgendaModel = getModelForClass(Agenda) as unknown as ModelType<Agenda>;
+const AgendaModel = getModelForClass(Agenda) as ModelType<Agenda>;
+
+export default AgendaModel;

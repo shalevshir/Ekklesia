@@ -1,4 +1,8 @@
-import { InstanceType, ModelType } from "typegoose";
+import { ReturnModelType } from "@typegoose/typegoose";
+import { DocumentType } from "@typegoose/typegoose";
+import { AnyParamConstructor } from "@typegoose/typegoose/lib/types";
+
+export type ModelType<T> = ReturnModelType<AnyParamConstructor<T>>
 
 class BaseRepo <T> {
   model: ModelType<T>;
@@ -23,11 +27,11 @@ class BaseRepo <T> {
     return await Promise.all(toPromise);
   }
 
-  async find(query: any, options: { populate?: any } = {}): Promise<InstanceType<T>[]> {
+  async find(query: any, options: { populate?: any } = {}): Promise<Array<DocumentType<T & { populate?: any }>>> {
     return await this.model.find(query, null, { populate: options.populate });
   }
 
-  async findOne(query: any, options: { populate?: any } = {}): Promise<InstanceType<T>|null> {
+  async findOne(query: any, options: { populate?: any } = {}): Promise<DocumentType<T>|null> {
     return await this.model.findOne(query, null, { populate: options.populate });
   }
 
