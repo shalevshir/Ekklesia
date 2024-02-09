@@ -31,7 +31,7 @@ class StageSchema {
   @prop()
   date?: Date;
 
-  @prop({ type: Array<VoteSchema> })
+  @prop({ type: [ VoteSchema ] })
   votes?: VoteSchema[];
 }
 
@@ -75,7 +75,7 @@ export class Bill {
   @prop({ ref: Array<Person> })
   initiators?: Ref<Person>[];
 
-  @prop({ type: Array<StageSchema> })
+  @prop({ type: [ StageSchema ] })
   stages?: StageSchema[];
 
   @prop({ ref: Array<Category> })

@@ -10,7 +10,10 @@ class PersonRepo extends BaseRepo<Person> {
   }
 
   async createPersonFromKnessetApi() {
-    const persons = await knessetApiService.getKMs();
+    const persons = await knessetApiService.getMksNew();
+    if(!persons) {
+      throw new Error("No persons found");
+    }
     const arrangedPersons = await this.arrangeMks(persons);
     await this.createMany(arrangedPersons);
   }

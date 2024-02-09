@@ -17,6 +17,14 @@ enum AttendeeRole {
   Guest = "guest",
 }
 
+class Attendee {
+  @prop({ ref: Person })
+  person!: Ref<Person>;
+
+  @prop({ enum: AttendeeRole })
+  role?: AttendeeRole;
+};
+
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class CommitteeSession {
   @prop({ unique: true, required: true, type: Number})
@@ -51,12 +59,9 @@ export class CommitteeSession {
 
   @prop({ ref: Bill })
   bills?: Ref<Bill>[];
-
-  @prop({ _id: false })
-  attendees?: {
-    person: Ref<Person>;
-    role: AttendeeRole;
-  }[];
+ 
+  @prop({ type: [ Attendee ] })
+  attendees?: [ Attendee ];
 
   @prop({ ref: Category })
   categories?: Ref<Category>[];

@@ -3,6 +3,20 @@ import { rolesEnum } from "../types/roles.enum";
 import { Ministry } from "./ministry.model";
 import { ModelType } from "../abstracts/repo.abstract";
 
+class Role {
+  @prop({ enum: rolesEnum })
+  title?: string;
+
+  @prop()
+  startDate?: Date;
+
+  @prop()
+  endDate?: Date;
+
+  @prop()
+  isCurrent?: boolean;
+}
+
 class Block {
   @prop({ enum: ["coalition", "opposition"] })
   name?: string;
@@ -54,7 +68,7 @@ export class Person {
   @prop({ enum: ["male", "female"] })
   gender?: string;
 
-  @prop({ type: Array<Role> })
+  @prop({ type: [ Role ] })
   roles?: Role[];
 
   @prop()
@@ -66,10 +80,10 @@ export class Person {
   @prop({ _id: false })
   faction?: Faction;
 
-  @prop({ type: Array<Committee> })
+  @prop({ type: [ Committee ] })
   committees?: Committee[];
 
-  @prop({ type: Array<Ministry> })
+  @prop({ type: [ Ministry ] })
   minister?: Ref<Ministry>[];
 
   @prop()
@@ -77,20 +91,6 @@ export class Person {
 
   @prop()
   originId?: string;
-}
-
-class Role {
-  @prop({ enum: rolesEnum })
-  title?: string;
-
-  @prop()
-  startDate?: Date;
-
-  @prop()
-  endDate?: Date;
-
-  @prop()
-  isCurrent?: boolean;
 }
 
 
