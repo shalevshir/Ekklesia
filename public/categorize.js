@@ -67,7 +67,6 @@ async function fetchNextItem() {
                 if(queryLink){
                     const queryContentStream =await  fetch(`https://ekklesia-f0328075e83f.herokuapp.com/downloadFile?url=${queryLink}`)
                     let data = await queryContentStream.text();
-                    console.log(data)
 
                     const queryContentElm = document.getElementById('query-content');
                     queryContentElm.innerHTML = data
