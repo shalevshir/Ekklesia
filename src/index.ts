@@ -12,7 +12,7 @@ import { downloadAndSaveFile } from './services/files.service';
 import mammoth from 'mammoth';
 const app = express();
 const port = process.env.PORT || 3000;
-app.use(cors({origin: ['http://localhost','https://ekklesia-f0328075e83f.herokuapp.com','http://www.ekklesia.co.il']}))
+app.use(cors)
 app.use(express.json());
 app.use(express.static('public'));
 app.get('/health', (req, res) => {
