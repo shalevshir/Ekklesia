@@ -21,11 +21,14 @@ class QueryRepo extends BaseRepo<Query> {
   async fetchQueriesFromKnesset() {
     const queriesData = await knessetApiService.getQueries();
     const arrangedQueries = await this.arrangeQueries(queriesData);
-    await this.findOrCreate(arrangedQueries);
+    await this.updateMany(arrangedQueries, { upsert:true});
   }
 
   async arrangeQueries(queries: any[]) {
     for await (const query of queries) {
+      if(!query.QueryID){
+        query.QueryID = query.Id;
+      }
       const ministry = await ministryRepo.findOne({
         name: query.KNS_GovMinistry.Name,
       });
@@ -33,19 +36,20 @@ class QueryRepo extends BaseRepo<Query> {
         throw new Error(`Ministry ${query.KNS_GovMinistry.Name} not found`);
       }
       query.replyMinistry = ministry?._id;
-
-      for( let document of query.KNS_DocumentQueries){
+      const documents = await knessetApiService.getQueriesDocuments(query.Id);
+      for( let document of documents ? documents : []){
         if (document && document.GroupTypeDesc === "שאילתה") {
           query.queryLink = document.FilePath;
-        }
-        if(document && document.GroupTypeDesc === "תשובת השר"){
+        }else if(document && document.GroupTypeDesc === "תשובת השר"){
           query.replyLink = document.FilePath;
+        }else {
+          throw new Error(`Document (ID:${document.Id}) type(${document.GroupTypeDesc}) not recognized`);
         }
       } 
 
       const person = await personRepo.findOne({ originId: query.PersonID });
       if (person) {
-        query.PersonID = person._id;
+        query.PersonID = person?._id;
       }else{
         delete query.PersonID;
       }

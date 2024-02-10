@@ -1,5 +1,5 @@
 // Array to store selected choices
-const selectedChoices = [];
+let selectedChoices = [];
 const dataToSend = [];
 let documentId = '';
 // Function to handle choice selection
