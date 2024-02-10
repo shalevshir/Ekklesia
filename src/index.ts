@@ -13,7 +13,7 @@ import mammoth from 'mammoth';
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors({
-  origin: 'http://www.ekklesia.co.il', // replace with your origin
+  origin: 'http://www.ekklesia.co.il',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 app.use(express.json());
