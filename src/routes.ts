@@ -8,6 +8,10 @@ import billRepo from "./repos/bill.repo";
 import categoriesRepo from "./repos/category.repo";
 import { Request, Response } from "express";
 
+import Queue from 'bull';
+
+const workerQueue = new Queue('workerQueue', process.env.REDISCLOUD_URL || 'redis://127.0.0.1:6379');
+
 const wait = async (seconds: number) => {
     return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
   };
@@ -61,8 +65,8 @@ const updateSessionsInCommittees = async (req: Request, res: Response) => {
 };
 
 const fetchQueries = async (req: Request, res: Response) => {
-  await queryRepo.fetchQueriesFromKnesset();
-  res.send("done");
+  await workerQueue.add('fetchQueries');
+  res.send("Job sent to worker queue.");
 };
 
 const fetchBills = async (req: Request, res: Response) => {
