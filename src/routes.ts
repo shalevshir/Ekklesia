@@ -65,7 +65,6 @@ const updateSessionsInCommittees = async (req: Request, res: Response) => {
 };
 
 const fetchQueries = async (req: Request, res: Response) => {
-  console.log(process.env.REDISCLOUD_URL, 'process.env.REDISCLOUD_URL')
   await workerQueue.add('fetchQueries');
   res.send("Job sent to worker queue.");
 };
