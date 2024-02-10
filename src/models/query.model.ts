@@ -18,7 +18,7 @@ export class Query extends TimeStamps {
   @prop()
   replyLink?: string;
 
-  @prop({ enum: ["type1", "type2"] })
+  @prop({ enum: ["regular", "urgent", "direct"] })
   type?: string;
 
   @prop()
