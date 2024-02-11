@@ -46,18 +46,17 @@ app.get("/downloadFile", async (req, res) => {
   try {
     const url = req.query.url as string;
     const response = await downloadAndSaveFile(url);
-    const data = await mammoth.convertToHtml({path: response}).catch((err) => {
-      console.log(err);
-    }) as any;
-    // delete te file after converting
+    const data = await mammoth.convertToHtml({path: response});
+
     fs.unlink(response, (err) => {
       if (err) {
-        console.error(err)
+        logger.error(err)
         return
       }
     })
     res.send(data.value);
   } catch (error) {
+    logger.error("Error downloading file:", error);
     res.status(500).send
       ("Error downloading file:" + error);
   }

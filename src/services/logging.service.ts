@@ -9,9 +9,4 @@ const logger = winston.createLogger({
   ],
 });
 
-console.log('logger created');
-// Example usage
-logger.info('This is an informational message');
-logger.error('This is an error message');
-
 export default logger;

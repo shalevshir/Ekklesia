@@ -1,6 +1,7 @@
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
+import logger from './logging.service';
 
 async function downloadAndSaveFile(url: string): Promise<string>{
     try {
@@ -16,7 +17,7 @@ async function downloadAndSaveFile(url: string): Promise<string>{
             writer.on('error', reject);
         });
     } catch (error) {
-        console.error('Error downloading file:', error);
+        logger.error('Error downloading file:', error);
         throw error;
     }
 }
