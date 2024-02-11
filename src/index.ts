@@ -4,9 +4,10 @@ if(process.env.NODE_ENV !== "production"){
   require("dotenv").config();
 } 
 import { connectDB } from "./config/db";
-import routers from "./routes";
 connectDB();
+import routers from "./routes";
 
+import logger from "./services/logging.service";
 import express from "express";
 import { downloadAndSaveFile } from './services/files.service';
 import mammoth from 'mammoth';
@@ -63,5 +64,5 @@ app.get("/downloadFile", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Ekklesia app listening at port ${port}`);
+  logger.info(`Ekklesia app listening at port ${port}`);
 });
