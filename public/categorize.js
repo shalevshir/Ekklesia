@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     await fetchNextItem();
     // Fetch categories from the server on page load
-    const response = await fetch('https://ekklesia-f0328075e83f.herokuapp.com/categories');
+    const response = await fetch('https://ekklesia-f0328075e83f.herokuapp.com/category');
     const categories = await response.json();
 
     const categoriesListElm = document.getElementById('categoriesList');

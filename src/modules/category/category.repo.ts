@@ -11,11 +11,11 @@ class CategoryRepo extends BaseRepo<Category> {
     }
 
     async getSubCategories(categoryName: string){
-        const mainCategory = await this.find({name: categoryName},{populate: 'subCategories'});
-        if(!mainCategory || !mainCategory[0]){
+        const mainCategory = await this.findOne({name: categoryName},{populate: 'subCategories'});
+        if(!mainCategory){
             throw new Error('Category not found');
         }
-        return mainCategory[0].subCategories;
+        return mainCategory.subCategories;
     }
 }
 

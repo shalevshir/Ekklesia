@@ -79,16 +79,6 @@ const updateBills = async (req: Request, res: Response) => {
   res.send("done");
 };
 
-const getCategories = async (req: Request, res: Response) => {
-  const categories = await categoriesRepo.getAllCategories();
-  res.send(categories);
-};
-
-const getSubCategories = async (req: Request, res: Response) => {
-  const subCategories = await categoriesRepo.getSubCategories(req.params.categoryName);
-  res.send(subCategories);
-};
-
 export default {
   fetchMks,
   fetchCommittees,
@@ -97,7 +87,5 @@ export default {
   updateSessionsInCommittees,
   fetchQueries,
   fetchBills,
-  updateBills,
-  getCategories,
-  getSubCategories
+  updateBills
 };

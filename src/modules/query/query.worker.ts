@@ -1,6 +1,6 @@
 import queryRepo from "./query.repo";
 import knessetApiService from "../../utils/knesset-api.service";
-import logger from "../../utils/logging.service";
+import logger from "../../utils/logger";
 
 
 class queriesWorker {

@@ -1,7 +1,21 @@
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
-import logger from './logging.service';
+import logger from './logger';
+import mammoth from 'mammoth';
+
+async function getFileContent(url: string): Promise<string> {
+    const response = await downloadAndSaveFile(url);
+    const data = await mammoth.convertToHtml({path: response});
+
+    fs.unlink(response, (err) => {
+      if (err) {
+        logger.error('Error deleting file:', err);
+      }
+    });
+    return data.value;
+}
+
 
 async function downloadAndSaveFile(url: string): Promise<string>{
     try {
@@ -22,4 +36,4 @@ async function downloadAndSaveFile(url: string): Promise<string>{
     }
 }
 
-export { downloadAndSaveFile }
+export { downloadAndSaveFile, getFileContent }
