@@ -99,7 +99,5 @@ export default {
   fetchBills,
   updateBills,
   getCategories,
-  getSubCategories,
-  getNextQuery,
-  addCategoryToQuery,
+  getSubCategories
 };
