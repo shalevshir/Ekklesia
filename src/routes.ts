@@ -89,16 +89,6 @@ const getSubCategories = async (req: Request, res: Response) => {
   res.send(subCategories);
 };
 
-const getNextQuery = async (req: Request, res: Response) => {
-  const query = await queryRepo.getNextQuery();
-  res.send(query);
-};
-
-const addCategoryToQuery = async (req: Request, res: Response) => {  
-  const query = await queryRepo.addCategoryToQuery(req.body.documentId, req.body.categories);
-  res.send(query);
-};
-
 export default {
   fetchMks,
   fetchCommittees,

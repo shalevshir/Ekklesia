@@ -11,6 +11,7 @@ import logger from "./utils/logging.service";
 import express from "express";
 import { downloadAndSaveFile } from './utils/files.service';
 import mammoth from 'mammoth';
+import queryRouter from './modules/query/query.routers';
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors({
@@ -27,8 +28,7 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 })
 
-app.get("/getNextQuery", routers.getNextQuery);
-app.post("/addCategoryToQuery", routers.addCategoryToQuery);
+app.use("/query", queryRouter);
 
 app.get("/fetchMks", routers.fetchMks);
 app.get("/fetchCommittees", routers.fetchCommittees);
