@@ -1,8 +1,8 @@
 import { prop, getModelForClass, Ref, modelOptions } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-import { Person } from "./person.model";
-import { Ministry } from "./ministry.model";
-import { Category } from "./category.model";
+import { Person } from "../person/person.model";
+import { Ministry } from "../ministry/ministry.model";
+import { Category } from "../category/category.model";
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Query extends TimeStamps {

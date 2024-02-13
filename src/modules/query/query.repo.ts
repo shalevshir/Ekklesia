@@ -1,9 +1,9 @@
-import BaseRepo from "../abstracts/repo.abstract";
-import QueryModel, { Query } from "../models/query.model";
-import knessetApiService from "../services/knesset-api.service";
-import personRepo from "./person.repo";
-import ministryRepo from "./ministry.repo";
-import categoryRepo from "./category.repo";
+import BaseRepo from "../../abstracts/repo.abstract";
+import QueryModel, { Query } from "./query.model";
+import knessetApiService from "../../utils/knesset-api.service";
+import personRepo from "../person/person.repo";
+import ministryRepo from "../ministry/ministry.repo";
+import categoryRepo from "../category/category.repo";
 
 class QueryRepo extends BaseRepo<Query> {
   typesEnum: Record<number,string> = {

@@ -1,5 +1,5 @@
 import { prop, getModelForClass, Ref, modelOptions } from "@typegoose/typegoose";
-import { Committee } from "./committee.model";
+import { Committee } from "../committee/committee.model";
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Category {

@@ -1,6 +1,6 @@
 import { prop, getModelForClass, Ref, modelOptions } from "@typegoose/typegoose";
-import { rolesEnum } from "../types/roles.enum";
-import { Ministry } from "./ministry.model";
+import { rolesEnum } from "../../types/roles.enum";
+import { Ministry } from "../ministry/ministry.model";
 
 class Role {
   @prop({ enum: rolesEnum })

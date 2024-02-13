@@ -1,7 +1,7 @@
 import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose';
-import { Person } from './person.model';
-import { CommitteeSession } from './committeeSession.model';
-import { Bill } from './bill.model';
+import { Person } from '../person/person.model';
+import { CommitteeSession } from '../committeeSession/committeeSession.model';
+import { Bill } from '../bill/bill.model';
 
 enum CommitteeType {
   Main = 'main',

@@ -1,8 +1,8 @@
 import { DocumentType } from "@typegoose/typegoose";
-import BaseRepo from "../abstracts/repo.abstract";
-import CommitteeSessionModel, { CommitteeSession } from "../models/committeeSession.model";
-import knessetApiService from "../services/knesset-api.service";
-import committeeRepo from "./committee.repo";
+import BaseRepo from "../../abstracts/repo.abstract";
+import CommitteeSessionModel, { CommitteeSession } from "./committeeSession.model";
+import knessetApiService from "../../utils/knesset-api.service";
+import committeeRepo from "../committee/committee.repo";
 import _ from "lodash";
 
 class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {

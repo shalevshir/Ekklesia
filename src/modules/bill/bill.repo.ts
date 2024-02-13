@@ -1,8 +1,8 @@
-import BaseRepo from "../abstracts/repo.abstract";
-import personRepo from "./person.repo";
-import BillModel, {Bill} from "../models/bill.model";
-import knessetApiService from "../services/knesset-api.service";
-import committeeRepo from "./committee.repo";
+import BaseRepo from "../../abstracts/repo.abstract";
+import personRepo from "../person/person.repo";
+import BillModel, {Bill} from "./bill.model";
+import knessetApiService from "../../utils/knesset-api.service";
+import committeeRepo from "../committee/committee.repo";
 import _ from "lodash";
 
 class BillsRepo extends BaseRepo<Bill> {

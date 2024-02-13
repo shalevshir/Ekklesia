@@ -1,9 +1,9 @@
-import queryRepo from "../repos/query.repo";
-import knessetApiService from "../services/knesset-api.service";
-import logger from "../services/logging.service";
+import queryRepo from "./query.repo";
+import knessetApiService from "../../utils/knesset-api.service";
+import logger from "../../utils/logging.service";
 
 
-class WorkerModule {
+class queriesWorker {
     async fetchQueries(){
         try {
             logger.info("Fetching queries from knesset started");
@@ -16,4 +16,4 @@ class WorkerModule {
     }
 }
 
-export default new WorkerModule();
+export default new queriesWorker();

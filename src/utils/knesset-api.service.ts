@@ -1,7 +1,7 @@
 import axios from "axios";
 import _ from "lodash";
 import { mapIdToRole } from "../types/roles.enum";
-import { Person } from "../models/person.model";
+import { Person } from "../modules/person/person.model";
 
 function wait(seconds: number) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));

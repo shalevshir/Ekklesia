@@ -1,5 +1,5 @@
-import BaseRepo from '../abstracts/repo.abstract';
-import CategoryModel, { Category } from '../models/category.model';
+import BaseRepo from '../../abstracts/repo.abstract';
+import CategoryModel, { Category } from './category.model';
 
 class CategoryRepo extends BaseRepo<Category> {
     constructor() {

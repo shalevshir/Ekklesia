@@ -1,9 +1,9 @@
-import BaseRepo from "../abstracts/repo.abstract";
-import PersonModel, { Person } from "../models/person.model";
-import knessetApiService from "../services/knesset-api.service";
-import committeeRepo from "./committee.repo";
-import ministryRepo from "./ministry.repo";
-import { mapIdToRole } from "../types/roles.enum";
+import BaseRepo from "../../abstracts/repo.abstract";
+import PersonModel, { Person } from "./person.model";
+import knessetApiService from "../../utils/knesset-api.service";
+import committeeRepo from "../committee/committee.repo";
+import ministryRepo from "../ministry/ministry.repo";
+import { mapIdToRole } from "../../types/roles.enum";
 class PersonRepo extends BaseRepo<Person> {
   constructor() {
     super(PersonModel);

@@ -1,7 +1,7 @@
 import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose';
-import { Person } from './person.model';
-import { Committee } from './committee.model';
-import { Category } from './category.model';
+import { Person } from '../person/person.model';
+import { Committee } from '../committee/committee.model';
+import { Category } from '../category/category.model';
 
 enum Vote {
   FOR = 'for',

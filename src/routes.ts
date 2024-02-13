@@ -1,11 +1,11 @@
 
 
-import committeeRepo from "./repos/committee.repo";
-import CommitteeSessionsRepo from "./repos/committeeSession.repo";
-import queryRepo from "./repos/query.repo";
-import personRepo from "./repos/person.repo";
-import billRepo from "./repos/bill.repo";
-import categoriesRepo from "./repos/category.repo";
+import committeeRepo from "./modules/committee/committee.repo";
+import CommitteeSessionsRepo from "./modules/committeeSession/committeeSession.repo";
+import queryRepo from "./modules/query/query.repo";
+import personRepo from "./modules/person/person.repo";
+import billRepo from "./modules/bill/bill.repo";
+import categoriesRepo from "./modules/category/category.repo";
 import { Request, Response } from "express";
 
 import Queue from 'bull';

@@ -3,13 +3,13 @@ import cors from 'cors';
 if(process.env.NODE_ENV !== "production"){
   require("dotenv").config();
 } 
-import { connectDB } from "./config/db";
+import { connectDB } from "./utils/db";
 connectDB();
 import routers from "./routes";
 
-import logger from "./services/logging.service";
+import logger from "./utils/logging.service";
 import express from "express";
-import { downloadAndSaveFile } from './services/files.service';
+import { downloadAndSaveFile } from './utils/files.service';
 import mammoth from 'mammoth';
 const app = express();
 const port = process.env.PORT || 3000;

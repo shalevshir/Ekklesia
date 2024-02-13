@@ -1,5 +1,5 @@
-import BaseRepo from "../abstracts/repo.abstract";
-import MinistryModel, { Ministry } from "../models/ministry.model";
+import BaseRepo from "../../abstracts/repo.abstract";
+import MinistryModel, { Ministry } from "./ministry.model";
 
 class MinistryRepo extends BaseRepo<Ministry> {
     constructor() {

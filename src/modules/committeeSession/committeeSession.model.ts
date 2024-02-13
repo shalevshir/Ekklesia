@@ -1,8 +1,8 @@
 import { prop, getModelForClass, Ref, modelOptions } from "@typegoose/typegoose";
-import { Committee } from "./committee.model";
-import { Bill } from "./bill.model";
-import { Person } from "./person.model";
-import { Category } from "./category.model";
+import { Committee } from "../committee/committee.model";
+import { Bill } from "../bill/bill.model";
+import { Person } from "../person/person.model";
+import { Category } from "../category/category.model";
 
 enum SessionType {
   Open = "open",

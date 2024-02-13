@@ -1,6 +1,6 @@
-import BaseRepo from "../abstracts/repo.abstract";
-import CommitteeModel, { Committee } from "../models/committee.model";
-import knessetApiService from "../services/knesset-api.service";
+import BaseRepo from "../../abstracts/repo.abstract";
+import CommitteeModel, { Committee } from "./committee.model";
+import knessetApiService from "../../utils/knesset-api.service";
 import _ from "lodash";
 class CommitteeRepo extends BaseRepo<Committee> {
   typeEnum: Record<number,string> = {
