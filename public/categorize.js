@@ -44,7 +44,7 @@ function handleChoiceSelection() {
 }
 
 async function fetchNextItem() {
-        fetch('https://ekklesia-f0328075e83f.herokuapp.com/getNextQuery')
+        fetch('https://ekklesia-f0328075e83f.herokuapp.com/query/nextQuery')
             .then(response => response.json())
             .then(async data => {
                 const { _id: id, name, queryLink, replyLink, type, status, submitDate, replyDate, replyMinistry} = data;
@@ -121,8 +121,8 @@ async function submitCategory() {
     const categoryElement = document.getElementById('categoryInput');
     const subCategoryElement = document.getElementById('subCategoryInput');
 
-    const response = await fetch('https://ekklesia-f0328075e83f.herokuapp.com/addCategoryToQuery', {
-        method: 'POST',
+    const response = await fetch('https://ekklesia-f0328075e83f.herokuapp.com/query/addCategoryToQuery', {
+        method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
         },

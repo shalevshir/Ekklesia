@@ -3,12 +3,12 @@ import queryRepo from './query.repo';
 
 const queryRouter: Router = express.Router();
 
-queryRouter.get('/getNextQuery', async (req: Request, res: Response) => {
+queryRouter.get('/nextQuery', async (req: Request, res: Response) => {
     const query = await queryRepo.getNextQuery();
     res.send(query);
 });
 
-queryRouter.post('/addCategoryToQuery', async (req: Request, res: Response) => {
+queryRouter.patch('/categoryToQuery', async (req: Request, res: Response) => {
   const query = await queryRepo.addCategoryToQuery(req.body.documentId, req.body.categories);
   res.send(query);
 });
