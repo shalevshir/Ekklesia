@@ -43,8 +43,8 @@ class Faction {
   @prop()
   displayName?: string;
 
-  @prop({ _id: false })
-  block?: Block;
+  @prop({ enum: ["coalition", "opposition"] })
+  block?: string;
 }
 
 @modelOptions({ schemaOptions: { timestamps: true } })
