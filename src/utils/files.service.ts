@@ -4,9 +4,21 @@ import path from 'path';
 import logger from './logger';
 import mammoth from 'mammoth';
 
-async function getFileContent(url: string): Promise<string> {
+async function getFileAsHtml(url: string): Promise<string> {
     const response = await downloadAndSaveFile(url);
     const data = await mammoth.convertToHtml({path: response});
+
+    fs.unlink(response, (err) => {
+      if (err) {
+        logger.error('Error deleting file:', err);
+      }
+    });
+    return data.value;
+}
+
+async function getFileAsText(url: string): Promise<string> {
+    const response = await downloadAndSaveFile(url);
+    const data = await mammoth.extractRawText({path: response});
 
     fs.unlink(response, (err) => {
       if (err) {
@@ -36,4 +48,4 @@ async function downloadAndSaveFile(url: string): Promise<string>{
     }
 }
 
-export { downloadAndSaveFile, getFileContent }
+export { downloadAndSaveFile, getFileAsHtml, getFileAsText }

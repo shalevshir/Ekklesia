@@ -10,8 +10,9 @@ import queryRouter from './modules/query/query.routers';
 
 import logger from "./utils/logger";
 import express from "express";
-import { getFileContent } from './utils/files.service';
+import { getFileAsText,  getFileAsHtml } from './utils/files.service';
 import { handleError } from './utils/errors.utils';
+import gptService from './utils/gpt.service';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -47,7 +48,7 @@ app.get("/fileContent", async (req, res) => {
   try {
     const url = req.query.url as string;
     
-    const content = await getFileContent(url)
+    const content = await getFileAsHtml(url)
 
     res.send(content);
   } catch (error) {
