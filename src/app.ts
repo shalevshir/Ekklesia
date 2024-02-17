@@ -16,7 +16,7 @@ import { handleError } from './utils/errors.utils';
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors({
-  // origin: 'http://www.ekklesia.co.il',
+  origin: 'http://www.ekklesia.co.il',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 app.use(express.json());
