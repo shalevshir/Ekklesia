@@ -10,14 +10,13 @@ import queryRouter from './modules/query/query.routers';
 
 import logger from "./utils/logger";
 import express from "express";
-import { getFileAsText,  getFileAsHtml } from './utils/files.service';
+import { getFileAsHtml } from './utils/files.service';
 import { handleError } from './utils/errors.utils';
-import gptService from './utils/gpt.service';
 
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors({
-  origin: 'http://www.ekklesia.co.il',
+  // origin: 'http://www.ekklesia.co.il',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 app.use(express.json());

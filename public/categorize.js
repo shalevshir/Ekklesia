@@ -47,15 +47,19 @@ async function fetchNextItem() {
         fetch('https://ekklesia-f0328075e83f.herokuapp.com/query/nextQuery')
             .then(response => response.json())
             .then(async data => {
-                const { _id: id, name, queryLink, replyLink, type, status, submitDate, replyDate, replyMinistry} = data;
+                if(!data){
+                    alert('No more queries to categorize')
+                    return;
+                }
+                const { _id: id, name, queryLink, replyLink, type, status, submitDate, replyDate, replyMinister} = data;
                 documentId = id;
-                console.log(id)
+                console.log(data)
 
                 const documentJson = document.getElementById('documentJson');
                 documentJson.innerHTML = `
                 <p>Id: ${id}</p>
                 <p>Name: ${name}</p>
-                <p>Reply Ministry: ${replyMinistry.name}</p>
+                <p>Reply Ministry: ${replyMinister}</p>
                 ${queryLink?`<p><a href="${queryLink}" target="_blank">Query Link</a></p>`:'No Query Link Available'}
                 ${replyLink?`<p><a href="${replyLink}" target="_blank">Reply Link</a></p>`:'No Reply Link Available'}
                 <p>Type: ${type}</p>
@@ -65,7 +69,7 @@ async function fetchNextItem() {
                 `;
 
                 if(queryLink){
-                    const queryContentStream =await  fetch(`https://ekklesia-f0328075e83f.herokuapp.com/downloadFile?url=${queryLink}`)
+                    const queryContentStream =await  fetch(`https://ekklesia-f0328075e83f.herokuapp.com/fileContent?url=${queryLink}`)
                     let data = await queryContentStream.text();
 
                     const queryContentElm = document.getElementById('query-content');
@@ -113,15 +117,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Attach event listener to category input
     document.getElementById('categoryInput').addEventListener('change', handleCategorySelection);
 
+
 });
 
+async function askGpt(){
+    const askGptElem = document.getElementById('askGptButton');
+    const currentColor = askGptElem.style.backgroundColor;
+    askGptElem.disabled = true;
+    askGptElem.textContent = 'Asking GPT...';
+    askGptElem.style.pointerEvents = 'none';
+    askGptElem.style.backgroundColor = '#ccc';
+
+    const responseElem = document.getElementById('gptResponseContent');
+    responseElem.innerHTML = 'GPT is thinking...'
+    const response = await fetch('https://ekklesia-f0328075e83f.herokuapp.com/category/query/' + documentId, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+    const responseData = await response.json();
+    console.log(responseData)
+    const responseHtml = responseData.map((item) => {
+        return `<div>
+        <p>Category: ${item.mainCategory}</p>
+        <p>SubCategory: ${item.subCategory}</p>
+        <p>Reason: ${item.reasoning||item.reason}</p>
+        </div>
+        <hr>`; // Add <hr> tag after each item
+    }).join('');
+    responseElem.innerHTML = responseHtml;
+    askGptElem.disabled = false;
+    askGptElem.textContent = 'Ask Again';
+    askGptElem.style.pointerEvents = 'auto';
+    askGptElem.style.backgroundColor = currentColor;
+
+    // const responseData = await response.json();
+}
 // Function to handle form submission
 async function submitCategory() {
-    console.log(dataToSend)
-    const categoryElement = document.getElementById('categoryInput');
-    const subCategoryElement = document.getElementById('subCategoryInput');
+    const submitButtonElement = document.getElementById('submitButton');
+    // Disable the submit button to prevent multiple submissions
+    submitButtonElement.disabled = true;
+    submitButtonElement.textContent = 'Submitting...';
+    submitButtonElement.style.pointerEvents = 'none';
+    submitButtonElement.style.backgroundColor = '#ccc';
 
-    const response = await fetch('https://ekklesia-f0328075e83f.herokuapp.com/query/addCategoryToQuery', {
+    const response = await fetch('https://ekklesia-f0328075e83f.herokuapp.com/query/categoryToQuery', {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -131,11 +173,9 @@ async function submitCategory() {
             categories: dataToSend
         }),
     });
-    if(!response.ok) {
-        console.log(response)
-    }
-    const responseData = await response.json();
+
     alert('Category submitted successfully');
+    // const responseData = await response.json();
     //refresh page
     window.location.reload();
 }

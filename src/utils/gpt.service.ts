@@ -15,12 +15,11 @@ class GptService {
 
   async categorizeQuery(query: string): Promise<string> {
     // add cache mechanism to the taxonomy
-    this.taxonomy = await categoryRepo.getCategoriesTree();
+    // this.taxonomy = await categoryRepo.getCategoriesTree();
     try {    
         const template = ChatPromptTemplate.fromMessages([
             ["system","I'll provide you with a query from the Knesset that I need to categorize into a predefined taxonomy of main categories and sub-categories."],
             ["system","The taxonomy is structured with main categories, each having specific related sub-categories. Below is the taxonomy:"],
-            ["system", this.taxonomy],
             ["system","Please categorize the following query based on the provided taxonomy. If you identify a need for a new sub-category, please suggest one and include \"isNewCategory\": true in your response, along with a brief explanation for your suggestion."],
             ["system","Note that you can select more then one subcategory and can have mix of main categories. but when you do so, make sure each sub category is in a different object in the array with it corresponding main category."],
             ["system","Your task is to categorize this query and provide the response in the specified format, including your reasoning for each categorization."],

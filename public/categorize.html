@@ -9,7 +9,13 @@
 </head>
 <body>
 <h1>Category Selector</h1>
-<div id="documentJson">Here will be displayed the JSON of the document.</div>
+<div id="documentJson">No document found</div>
+
+<div style="border: 1px solid black; padding: 10px;height: 200px; width: 50%; overflow: auto;">
+    <div style="overflow: auto;">
+        <p id="query-content"></p>
+    </div>
+</div>
 <input list="categoriesList" id="categoryInput" placeholder="Enter or select a category" />
 <datalist id="categoriesList">
     <!-- Categories options will be populated here -->
@@ -18,14 +24,17 @@
 <datalist id="subCategories">
     <!-- Sub Categories options will be populated here -->
 </datalist>
+</div>
+</body>
+</html>
 <div id="selectedChoices"></div>
-
-<button onclick="submitCategory()">Submit</button>
-
-<div style="border: 1px solid black; padding: 10px;height: 200px; width: 50%; overflow: auto;">
-    <div style="overflow: auto;">
-        <p id="query-content"></p>
-    </div>
+<button onclick="submitCategory()" id="submitButton">Submit</button>
+<div>
+<button onclick="(alert('Stay tuned'))" id="askGptButton" title="Coming soon">Ask GPT</button>
+<div id="gptResponse" style="border: 1px solid black; padding: 10px;height: 200px; width: 50%; overflow: auto;">
+    <p id="gptResponseContent">
+        If you are not sure about the category, you can use our AI.(Coming soon)
+    </p>
 </div>
 </body>
 </html>

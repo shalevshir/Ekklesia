@@ -69,12 +69,15 @@ class QueryRepo extends BaseRepo<Query> {
   }
 
   async getNextQuery() {
-    const query = await this.findOne({"categories": {"$size": 0}}, {populate: "replyMinistry"});
+    // categories not exist or empty array
+
+    const query = await this.findOne({"$or": [{"categories": {"$exists": false}}, {"categories": []}]}, {populate: "replyMinistry"});
     return query;
   }
 
   async addCategoryToQuery(queryId: number, categories: any[]) {
     const queryObj = await this.findOne({_id: queryId});
+    const toSave = [];
     if(!queryObj){
       throw new Error(`Query ${queryId} not found`);
     }
@@ -88,7 +91,7 @@ class QueryRepo extends BaseRepo<Query> {
         if(!subCategoryObj){
           throw new Error(`Category ${subCategoryId} not found`);
         }
-        queryObj.categories?.push(subCategoryObj._id);
+        toSave.push(subCategoryObj._id);
       }
       else{
         //create new category
@@ -97,10 +100,10 @@ class QueryRepo extends BaseRepo<Query> {
           isMainCategory: false,
         });
         await categoryRepo.update({name: mainCategory}, { $push: { subCategories: newCategory._id } });
-        queryObj.categories?.push(newCategory._id);
+        toSave.push(newCategory._id);
       }
     }
-    await queryObj.save();
+    await queryObj.updateOne({categories: toSave});
     return queryObj;
   }
 }
