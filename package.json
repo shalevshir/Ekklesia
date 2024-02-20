@@ -6,8 +6,10 @@
   "scripts": {
     "start": "node dist/app.js",
     "build": "tsc",
-    "dev": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/app.ts\"",
-    "deploy": "git push heroku main"
+    "watch:server": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/app.ts\"",
+    "watch:worker": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/worker.ts\"",
+    "deploy": "git push heroku main",
+    "run-job": "node scripts/runJob.js"
   },
   "engines": {
     "node": "20.x",

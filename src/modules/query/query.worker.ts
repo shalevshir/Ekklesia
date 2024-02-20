@@ -4,11 +4,11 @@ import logger from "../../utils/logger";
 
 
 class queriesWorker {
-    async fetchQueries(){
+    async fetchQueries(job:any){
         try {
-            logger.info("Fetching queries from knesset started");
+            logger.info({message:"Fetch queries process started", jobId: job.id});
             await queryRepo.fetchQueriesFromKnesset();
-            logger.info("Fetching queries from knesset finished");
+            logger.info("Fetching queries process finished");
         } catch (error) {
             logger.error("Error in fetchQueries", error);
             throw error;
