@@ -4,7 +4,9 @@ import knessetApiService from "../../utils/knesset-api.service";
 import personRepo from "../person/person.repo";
 import ministryRepo from "../ministry/ministry.repo";
 import categoryRepo from "../category/category.repo";
+import logger from "../../utils/logger";
 
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 class QueryRepo extends BaseRepo<Query> {
   typesEnum: Record<number,string> = {
     48: "regular",
@@ -19,23 +21,31 @@ class QueryRepo extends BaseRepo<Query> {
     super(QueryModel);
   }
   async fetchQueriesFromKnesset() {
+    logger.info("Fetching queries from knesset");
     const queriesData = await knessetApiService.getQueries();
+    logger.info({message:`fetched ${queriesData.length} queries from knesset`});
     const arrangedQueries = await this.arrangeQueries(queriesData);
     await this.updateMany(arrangedQueries, { upsert:true});
   }
 
-  async arrangeQueries(queries: any[]) {
+  async arrangeQueries(queries: any[]): Promise<Query[]> {
+    let queryNumber = 1;
+    let queriesToSave = [];
+    // queries = queries.splice(0, 3);
     for await (const query of queries) {
+      logger.info({message:`Mapping query #${queryNumber} out of ${queries.length}`, query});
       if(!query.QueryID){
         query.QueryID = query.Id;
       }
-      const ministry = await ministryRepo.findOne({
+      const ministry =  await ministryRepo.findOne({
         name: query.KNS_GovMinistry.Name,
       });
       if(!ministry && query.KNS_GovMinistry.IsActive === true){
         throw new Error(`Ministry ${query.KNS_GovMinistry.Name} not found`);
       }
       query.replyMinistry = ministry?._id;
+      const categoryByMinistry = ministryRepo.getCategoryByMinistryName(query.KNS_GovMinistry.Name);
+      query.categories = categoryByMinistry ? [ categoryByMinistry ] : [];
       const documents = await knessetApiService.getQueriesDocuments(query.Id);
       for( let document of documents ? documents : []){
         if (document && document.GroupTypeDesc === "שאילתה") {
@@ -53,19 +63,27 @@ class QueryRepo extends BaseRepo<Query> {
       }else{
         delete query.PersonID;
       }
+      const queryToSend: Query = {
+        originId: query.QueryID,
+        name: query.Name,
+        type: this.typesEnum[query.TypeID],
+        submitDate: query.SubmitDate,
+        replyDate: query.ReplyMinisterDate,
+        status: this.statusEnum[query.StatusID],
+        submitter: query.PersonID,
+        replyMinistry: query.replyMinistry,
+        queryLink: query.queryLink,
+        replyLink: query.replyLink,
+        categories: query.categories,
+      };
+
+      logger.info({message:`Query #${queryNumber} mapped`, query:queryToSend});
+
+      queriesToSave.push(queryToSend);
+      queryNumber++;
+      await wait(1000);
     }
-    return queries.map((query) => ({
-      originId: query.QueryID,
-      name: query.Name,
-      type: this.typesEnum[query.TypeID],
-      submitDate: query.SubmitDate,
-      replyDate: query.ReplyMinisterDate,
-      status: this.statusEnum[query.StatusID],
-      submitter: query.PersonID,
-      replyMinistry: query.replyMinistry,
-      queryLink: query.queryLink,
-      replyLink: query.replyLink,
-    }));
+    return queriesToSave;
   }
 
   async getNextQuery() {
