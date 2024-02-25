@@ -26,6 +26,13 @@ class billWorker {
             throw error;
         }
     }
+
+    async updateBillStages(job:any){
+        logger.info({message:"Update bill stages process started", jobId: job.id});
+        await billRepo.updateBillStages();
+        logger.info("Update bill stages process finished");
+        return true;
+    }
 }
 
 export default new billWorker();

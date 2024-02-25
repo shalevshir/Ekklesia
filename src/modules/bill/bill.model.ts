@@ -3,7 +3,7 @@ import { Person } from '../person/person.model';
 import { Committee } from '../committee/committee.model';
 import { Category } from '../category/category.model';
 
-enum Vote {
+export enum Vote {
   FOR = 'for',
   AGAINST = 'against',
   ABSTAIN = 'abstain',
@@ -31,6 +31,12 @@ class StageSchema {
 
   @prop({ type: [ VoteSchema ] })
   votes?: VoteSchema[];
+
+  @prop({ type: String })
+  sessionId?: string;
+
+  @prop({ type: String })
+  result?: string;
 }
 
 export class Bill {

@@ -1,10 +1,12 @@
 import BaseRepo from "../../abstracts/repo.abstract";
 import personRepo from "../person/person.repo";
-import BillModel, {Bill} from "./bill.model";
+import BillModel, {Bill, Vote} from "./bill.model";
 import knessetApiService from "../../utils/knesset-api.service";
 import committeeRepo from "../committee/committee.repo";
 import _ from "lodash";
-
+import { connection } from "../../utils/db";
+import PersonModel from "../person/person.model";
+import logger from "../../utils/logger";
 class BillsRepo extends BaseRepo<Bill> {
   constructor() {
     super(BillModel);
@@ -99,6 +101,60 @@ class BillsRepo extends BaseRepo<Bill> {
     }
     await this.updateMany(billsData);
   }
+
+  async updateBillStages() {
+  try {
+    const rawDataCollection = connection.collection('rawData');
+    const bills = await this.find({categories: {$ne: null}});
+    for (const bill of bills) {
+      const billData = await rawDataCollection.find({ 'Item ID': +bill.originId }).toArray();
+      if(!billData.length) continue;
+      bill.stages = [];
+      const stages = _.groupBy(billData, 'Session ID');
+      const persons = new Map();
+      const mappedStages = [];
+      for (const stageId in stages) {
+        const votes = stages[stageId];
+        //map persons for votes
+        for(const vote of votes){
+          if(!vote['MK ID']) {
+            continue;
+          }
+          const person = await PersonModel.findOne({originId: +vote['MK ID']});
+          if (!person) continue;
+          persons.set(vote['MK ID'], person._id);
+        }
+      }
+      for (const stageId in stages) {
+        const votes = stages[stageId];
+        const mappedVotes = _.chain(votes).map((vote) => {
+          if(!vote['MK ID']) {
+            return;
+          }
+          const person = persons.get(vote['MK ID']);
+          if (!person) return;
+          const voteType = vote['הצבעה'] === 'בעד' ? Vote.FOR : Vote.AGAINST;
+          return {
+            person: person,
+            vote: voteType,
+          };
+        }).compact().value();
+          const stageData = {
+            date: new Date(votes[0]['תאריך']),
+            votes: mappedVotes,
+            sessionId: stageId,
+          };
+          mappedStages.push(stageData);
+        }
+        bill.stages = mappedStages;
+        await bill.save();
+    }
+  } catch (error) {
+    logger.error("Error in updateBillStages", error);
+    throw error;
+  }
+    }
+  
 }
 
 export default new BillsRepo();
