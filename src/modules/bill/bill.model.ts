@@ -19,7 +19,7 @@ class VoteSchema {
 }
 
 @modelOptions({ schemaOptions: { timestamps: true } })
-class StageSchema {
+export class StageSchema {
   @prop({ enum: ['first-reading', 'second-reading', 'committee', 'third-reading'] })
   name?: string;
 

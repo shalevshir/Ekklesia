@@ -1,6 +1,6 @@
 import BaseRepo from "../../abstracts/repo.abstract";
 import personRepo from "../person/person.repo";
-import BillModel, {Bill, Vote} from "./bill.model";
+import BillModel, {Bill, StageSchema, Vote} from "./bill.model";
 import knessetApiService from "../../utils/knesset-api.service";
 import committeeRepo from "../committee/committee.repo";
 import _ from "lodash";
@@ -101,60 +101,46 @@ class BillsRepo extends BaseRepo<Bill> {
     }
     await this.updateMany(billsData);
   }
-
   async updateBillStages() {
-  try {
-    const rawDataCollection = connection.collection('rawData');
-    const bills = await this.find({categories: {$ne: null}});
-    for (const bill of bills) {
-      const billData = await rawDataCollection.find({ 'Item ID': +bill.originId }).toArray();
-      if(!billData.length) continue;
-      bill.stages = [];
-      const stages = _.groupBy(billData, 'Session ID');
-      const persons = new Map();
-      const mappedStages = [];
-      for (const stageId in stages) {
-        const votes = stages[stageId];
-        //map persons for votes
-        for(const vote of votes){
-          if(!vote['MK ID']) {
-            continue;
-          }
-          const person = await PersonModel.findOne({originId: +vote['MK ID']});
-          if (!person) continue;
-          persons.set(vote['MK ID'], person._id);
-        }
-      }
-      for (const stageId in stages) {
-        const votes = stages[stageId];
-        const mappedVotes = _.chain(votes).map((vote) => {
-          if(!vote['MK ID']) {
-            return;
-          }
-          const person = persons.get(vote['MK ID']);
-          if (!person) return;
-          const voteType = vote['הצבעה'] === 'בעד' ? Vote.FOR : Vote.AGAINST;
+    try {
+      const rawDataCollection = connection.collection('rawData');
+      const bills = await this.find({ categories: { $ne: null } });
+  
+      for (const bill of bills) {
+        const billData = await rawDataCollection.find({ 'Item ID': +bill.originId }).toArray();
+        if (!billData.length) continue;
+  
+        const stagesGroupedBySession = _.groupBy(billData, 'Session ID');
+        const personIds = new Set(billData.filter(data => data['MK ID']).map(data => data['MK ID']));
+        const personIdToDbIdMap = new Map();
+  
+        // Fetch all persons in parallel
+        const persons = await Promise.all([...personIds].map(id => 
+          PersonModel.findOne({ originId: +id }).then(person => person && personIdToDbIdMap.set(id, person._id))
+        ));
+  
+        const mappedStages = Object.entries(stagesGroupedBySession).map(([stageId, votes]) => {
+          if(!votes.length) return;
+          const filteredVotes = votes.filter(vote => vote['MK ID'] && personIdToDbIdMap.has(vote['MK ID'])).map(vote => ({
+            person: personIdToDbIdMap.get(vote['MK ID']),
+            vote: vote['הצבעה'] === 'בעד' ? Vote.FOR : Vote.AGAINST,
+          }));
+  
           return {
-            person: person,
-            vote: voteType,
-          };
-        }).compact().value();
-          const stageData = {
             date: new Date(votes[0]['תאריך']),
-            votes: mappedVotes,
+            votes: filteredVotes,
             sessionId: stageId,
           };
-          mappedStages.push(stageData);
-        }
-        bill.stages = mappedStages;
-        await bill.save();
-    }
-  } catch (error) {
-    logger.error("Error in updateBillStages", error);
-    throw error;
-  }
-    }
+        }).filter(stage => !!stage);
   
+        bill.stages = mappedStages as StageSchema[];
+        await bill.save();
+      }
+    } catch (error) {
+      logger.error("Error in updateBillStages", error);
+      throw error;
+    }
+  }  
 }
 
 export default new BillsRepo();
