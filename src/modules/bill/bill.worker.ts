@@ -27,9 +27,9 @@ class billWorker {
         }
     }
 
-    async updateBillStages(job:any){
+    async updateBillsStages(job:any){
         logger.info({message:"Update bill stages process started", jobId: job.id});
-        await billRepo.updateBillStages();
+        await billRepo.updateBillsStages();
         logger.info("Update bill stages process finished");
         return true;
     }

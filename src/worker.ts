@@ -11,9 +11,10 @@ const startWorker = async () => {
 
     workerQueue.process('fetchQueries', queryWorker.fetchQueries);
     workerQueue.process('updateCategoriesByMinistry', queryWorker.updateCategoriesByMinistry);
+    workerQueue.process('updateBillsStages', billWorker.updateBillsStages);
     workerQueue.process('updateBillsMainCategory', billWorker.updateBillsMainCategory);
 
-
+    
     console.log('Worker is running...');
 };
 

@@ -101,21 +101,26 @@ class BillsRepo extends BaseRepo<Bill> {
     }
     await this.updateMany(billsData);
   }
-  async updateBillStages() {
+  async updateBillsStages() {
     try {
-      const rawDataCollection = connection.collection('rawData');
+      const rawDataCollection = connection.collection('rawVotesData');
+      //Filter by status when we know relevant statuses
       const bills = await this.find({ categories: { $ne: null } });
-  
+      logger.info({message:`Updating stages for ${bills.length} bills `});
+      let billNumber = 1;
       for (const bill of bills) {
+        logger.info({message:`updating bill #${billNumber} out of ${bills.length}`, billId: bill._id});
         const billData = await rawDataCollection.find({ 'Item ID': +bill.originId }).toArray();
-        if (!billData.length) continue;
+        if (!billData.length){
+          logger.info({message:`No stages found for bill #${billNumber} out of ${bills.length}`, billId: bill._id});
+          continue;
+        }
   
         const stagesGroupedBySession = _.groupBy(billData, 'Session ID');
         const personIds = new Set(billData.filter(data => data['MK ID']).map(data => data['MK ID']));
         const personIdToDbIdMap = new Map();
   
-        // Fetch all persons in parallel
-        const persons = await Promise.all([...personIds].map(id => 
+        await Promise.all([...personIds].map(id => 
           PersonModel.findOne({ originId: +id }).then(person => person && personIdToDbIdMap.set(id, person._id))
         ));
   
@@ -135,9 +140,11 @@ class BillsRepo extends BaseRepo<Bill> {
   
         bill.stages = mappedStages as StageSchema[];
         await bill.save();
+        billNumber++;
+        logger.info({message:`Update stages for bill #${billNumber} completed`, billId: bill._id});
       }
     } catch (error) {
-      logger.error("Error in updateBillStages", error);
+      logger.error({message:"Error in updateBillStages", error});
       throw error;
     }
   }  
