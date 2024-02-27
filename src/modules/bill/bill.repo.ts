@@ -105,14 +105,16 @@ class BillsRepo extends BaseRepo<Bill> {
     try {
       const rawDataCollection = connection.collection('rawVotesData');
       //Filter by status when we know relevant statuses
-      const bills = await this.find({ categories: { $ne: null } });
+      const bills = await this.model.find({ categories: { $ne: null } }).lean() as any[];
       logger.info({message:`Updating stages for ${bills.length} bills `});
       let billNumber = 1;
       for (const bill of bills) {
         logger.info({message:`updating bill #${billNumber} out of ${bills.length}`, billId: bill._id});
         const billData = await rawDataCollection.find({ 'Item ID': +bill.originId }).toArray();
+
         if (!billData.length){
           logger.info({message:`No stages found for bill #${billNumber} out of ${bills.length}`, billId: bill._id});
+          billNumber++;
           continue;
         }
   
@@ -138,8 +140,7 @@ class BillsRepo extends BaseRepo<Bill> {
           };
         }).filter(stage => !!stage);
   
-        bill.stages = mappedStages as StageSchema[];
-        await bill.save();
+        await this.model.findOneAndUpdate({ _id: bill._id }, { stages: bill.stages });
         billNumber++;
         logger.info({message:`Update stages for bill #${billNumber} completed`, billId: bill._id});
       }
