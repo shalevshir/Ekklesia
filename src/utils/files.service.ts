@@ -1,3 +1,4 @@
+import csv from 'csv-parser';
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
@@ -48,4 +49,19 @@ async function downloadAndSaveFile(url: string): Promise<string>{
     }
 }
 
-export { downloadAndSaveFile, getFileAsHtml, getFileAsText }
+
+async function readCsv(filePath: string): Promise<any[]> {
+  return new Promise((resolve, reject) => {
+    const results: any[] = [];
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data: any) => results.push(data))
+      .on('end', () => {
+        resolve(results);
+      })
+      .on('error', (error: any) => {
+        reject(error);
+      });
+  });
+}
+export { downloadAndSaveFile, getFileAsHtml, getFileAsText, readCsv }

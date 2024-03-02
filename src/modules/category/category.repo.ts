@@ -56,6 +56,10 @@ class CategoryRepo extends BaseRepo<Category> {
             throw error;
         }
     }
+
+    async getMainCategories() {
+      return await this.find({isMainCategory: true});
+    }
 }
 
 const categoryRepo = new CategoryRepo();

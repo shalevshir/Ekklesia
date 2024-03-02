@@ -2,6 +2,7 @@ import axios from "axios";
 import _ from "lodash";
 import { mapIdToRole } from "../types/roles.enum";
 import { Person } from "../modules/person/person.model";
+import logger from "./logger";
 
 function wait(seconds: number) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -185,7 +186,7 @@ class KnessetService {
     try{
       for await (const billId of billsIds) {
         const { data } = await this.axiosInstance.get(
-          `${this.dataBases.parliament}/KNS_DocumentBill?$filter=BillID eq ${billId}`
+          `${this.dataBases.parliament}/KNS_DocumentBill?$filter=BillID eq ${billId}&$orderby=LastUpdatedDate desc&$top=1`
         );
         updateData.push({
           originId: billId,
@@ -195,7 +196,8 @@ class KnessetService {
       }
       return updateData;
     } catch(error) {
-      console.log(error)
+      logger.error("Error getting bills links", error);
+      throw error;
     }
   }
 }
