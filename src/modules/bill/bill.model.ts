@@ -16,6 +16,12 @@ class VoteSchema {
 
   @prop({ enum: Vote, default: Vote.NO_VOTE})
   vote?: Vote;
+
+  @prop({ type: String })
+  originId?: string;
+
+  @prop({ type: String })
+  sessionId?: string;
 }
 
 @modelOptions({ schemaOptions: { timestamps: true } })
@@ -31,9 +37,6 @@ export class StageSchema {
 
   @prop({ type: [ VoteSchema ] })
   votes?: VoteSchema[];
-
-  @prop({ type: String })
-  sessionId?: string;
 
   @prop({ type: String })
   result?: string;
@@ -84,6 +87,15 @@ export class Bill {
 
   @prop({ ref: Array<Category> })
   categories?: Ref<Category>[];
+
+  @prop({ type: String})
+  documentLink?: string;
+
+  @prop({ type: [ Number ] })
+  vector?: number[];
+
+  @prop({ type: [ Category ] })
+  newCategories?: Category[];
 }
 
 const BillModel = getModelForClass(Bill)

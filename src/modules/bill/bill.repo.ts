@@ -101,6 +101,17 @@ class BillsRepo extends BaseRepo<Bill> {
     }
     await this.updateMany(billsData);
   }
+
+  async updateBillsDocumentsLinks() {
+    const bills = await this.model.find({ categories: { $ne: null } }).lean();
+    const billsIds:number[] = bills.map((bill: any) => bill.originId) as number[];
+    const billsData = await knessetApiService.getBillsLinks(billsIds);
+    if(!billsData) {
+      throw new Error("No bills found");
+    }
+    await this.updateMany(billsData);
+  }
+
   async updateBillsStages() {
     try {
       const rawDataCollection = connection.collection('rawVotesData');
@@ -118,7 +129,7 @@ class BillsRepo extends BaseRepo<Bill> {
           continue;
         }
   
-        const stagesGroupedBySession = _.groupBy(billData, 'Session ID');
+        const stagesGroupedBySession = _.groupBy(billData, 'Vote ID');
         const personIds = new Set(billData.filter(data => data['MK ID']).map(data => data['MK ID']));
         const personIdToDbIdMap = new Map();
   
@@ -131,16 +142,17 @@ class BillsRepo extends BaseRepo<Bill> {
           const filteredVotes = votes.filter(vote => vote['MK ID'] && personIdToDbIdMap.has(vote['MK ID'])).map(vote => ({
             person: personIdToDbIdMap.get(vote['MK ID']),
             vote: vote['הצבעה'] === 'בעד' ? Vote.FOR : Vote.AGAINST,
+            originId: vote['Vote ID'],
+            sessionId: vote['Session ID'],
           }));
   
           return {
             date: new Date(votes[0]['תאריך']),
             votes: filteredVotes,
-            sessionId: stageId,
           };
         }).filter(stage => !!stage);
   
-        await this.model.findOneAndUpdate({ _id: bill._id }, { stages: bill.stages });
+        await this.model.findOneAndUpdate({ _id: bill._id }, { stages: mappedStages });
         billNumber++;
         logger.info({message:`Update stages for bill #${billNumber} completed`, billId: bill._id});
       }

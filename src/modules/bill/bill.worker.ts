@@ -33,6 +33,13 @@ class billWorker {
         logger.info("Update bill stages process finished");
         return true;
     }
+
+    async updateBillDocument(job:any){
+        logger.info({message:"Update bill document process started", jobId: job.id});
+        await billRepo.updateBillsDocumentsLinks();
+        logger.info("Update bill document process finished");
+        return true;
+    }
 }
 
 export default new billWorker();
