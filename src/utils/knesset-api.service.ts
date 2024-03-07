@@ -1,5 +1,5 @@
 import axios from "axios";
-import _ from "lodash";
+import _, { filter } from "lodash";
 import { mapIdToRole } from "../types/roles.enum";
 import { Person } from "../modules/person/person.model";
 import logger from "./logger";
@@ -184,15 +184,28 @@ class KnessetService {
   async getBillsLinks(billsIds: number[]) {
     const updateData = [];
     try{
+      logger.info(`Getting bills links for ${billsIds.length} bills`);
+      let billNumber = 1;
       for await (const billId of billsIds) {
+        logger.info(`Getting bill #${billNumber} out of ${billsIds.length}`, billId)
         const { data } = await this.axiosInstance.get(
-          `${this.dataBases.parliament}/KNS_DocumentBill?$filter=BillID eq ${billId}&$orderby=LastUpdatedDate desc&$top=1`
+          `${this.dataBases.parliament}/KNS_DocumentBill?$filter=BillID eq ${billId}&$orderby=LastUpdatedDate desc`
         );
+        const getLatest = (data: any): any =>{
+          const first = _.first(data) as any
+          if(first.GroupTypeID !==  17 || first.GroupTypeID) return first
+          
+          //remove government decisions documents
+          return getLatest(data.slice(1))
+        }
+        
+        const latest = getLatest(data.value)
         updateData.push({
           originId: billId,
-          billLink: (data.value && data.value.length) ? (_.last(data.value) as any).FilePath : null,
+          billLink: latest.FilePath
         });
-        await wait(0.5);
+        logger.info(`Got bill #${billNumber++} out of ${billsIds.length}`, billId)
+        await wait(0.3);
       }
       return updateData;
     } catch(error) {

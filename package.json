@@ -23,11 +23,13 @@
     "axios": "^1.4.0",
     "bull": "^4.12.2",
     "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
     "express": "^4.18.2",
     "langchain": "^0.1.19",
     "lodash": "^4.17.21",
     "mammoth": "^1.6.0",
     "node-cron": "^3.0.3",
+    "pdf-parse": "^1.1.1",
     "winston": "^3.11.0"
   },
   "devDependencies": {
@@ -36,6 +38,7 @@
     "@types/lodash": "^4.14.202",
     "@types/node": "^20.11.16",
     "@types/node-cron": "^3.0.11",
+    "@types/pdf-parse": "^1.1.4",
     "dotenv": "^16.4.1",
     "nodemon": "^2.0.15",
     "ts-node": "^10.9.2",

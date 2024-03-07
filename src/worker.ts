@@ -8,12 +8,14 @@ const startWorker = async () => {
     await connectDB()
     
     const workerQueue = new Queue('workerQueue', process.env.REDISCLOUD_URL || 'redis://127.0.0.1:6379');
-
     workerQueue.process('fetchQueries', queryWorker.fetchQueries);
     workerQueue.process('updateCategoriesByMinistry', queryWorker.updateCategoriesByMinistry);
+
+    workerQueue.process('fetchBills', billWorker.fetchBills);
     workerQueue.process('updateBillsStages', billWorker.updateBillsStages);
-    workerQueue.process('updateBillsMainCategory', billWorker.updateBillsMainCategory);
     workerQueue.process('updateBillDocument', billWorker.updateBillDocument);
+    // workerQueue.process('updateBillsMainCategory', billWorker.updateBillsMainCategory);
+    // workerQueue.process('embedBills', billWorker.embedBills);
 
     logger.info('Worker is running...');
 };

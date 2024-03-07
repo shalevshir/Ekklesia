@@ -44,7 +44,7 @@ function handleChoiceSelection() {
 }
 
 async function fetchNextItem() {
-        fetch('https://ekklesia-f0328075e83f.herokuapp.com/query/nextQuery')
+        fetch('http://localhost:3000/query/nextQuery')
             .then(response => response.json())
             .then(async data => {
                 if(!data){
@@ -69,7 +69,7 @@ async function fetchNextItem() {
                 `;
 
                 if(queryLink){
-                    const queryContentStream =await  fetch(`https://ekklesia-f0328075e83f.herokuapp.com/fileContent?url=${queryLink}`)
+                    const queryContentStream =await  fetch(`http://localhost:3000/fileContent?url=${queryLink}`)
                     let data = await queryContentStream.text();
 
                     const queryContentElm = document.getElementById('query-content');
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     await fetchNextItem();
     // Fetch categories from the server on page load
-    const response = await fetch('https://ekklesia-f0328075e83f.herokuapp.com/category');
+    const response = await fetch('http://localhost:3000/category');
     const categories = await response.json();
 
     const categoriesListElm = document.getElementById('categoriesList');
@@ -130,7 +130,7 @@ async function askGpt(){
 
     const responseElem = document.getElementById('gptResponseContent');
     responseElem.innerHTML = 'GPT is thinking...'
-    const response = await fetch('https://ekklesia-f0328075e83f.herokuapp.com/category/query/' + documentId, {
+    const response = await fetch('http://localhost:3000/category/query/' + documentId, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -144,7 +144,7 @@ async function askGpt(){
         <p>SubCategory: ${item.subCategory}</p>
         <p>Reason: ${item.reasoning||item.reason}</p>
         </div>
-        <hr>`; // Add <hr> tag after each item
+        <hr>`; 
     }).join('');
     responseElem.innerHTML = responseHtml;
     askGptElem.disabled = false;
@@ -163,7 +163,7 @@ async function submitCategory() {
     submitButtonElement.style.pointerEvents = 'none';
     submitButtonElement.style.backgroundColor = '#ccc';
 
-    const response = await fetch('https://ekklesia-f0328075e83f.herokuapp.com/query/categoryToQuery', {
+    const response = await fetch('http://localhost:3000/query/categoryToQuery', {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',

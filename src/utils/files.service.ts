@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import logger from './logger';
 import mammoth from 'mammoth';
-
+import pdf from 'pdf-parse';
 async function getFileAsHtml(url: string): Promise<string> {
     const response = await downloadAndSaveFile(url);
     const data = await mammoth.convertToHtml({path: response});
@@ -17,16 +17,28 @@ async function getFileAsHtml(url: string): Promise<string> {
     return data.value;
 }
 
-async function getFileAsText(url: string): Promise<string> {
-    const response = await downloadAndSaveFile(url);
-    const data = await mammoth.extractRawText({path: response});
-
-    fs.unlink(response, (err) => {
-      if (err) {
-        logger.error('Error deleting file:', err);
+async function getFileAsText(url: string): Promise<string | undefined>  {
+    try {
+      const response = await downloadAndSaveFile(url);
+      let data
+      if(response.endsWith('.docx')){
+        const res = await mammoth.extractRawText({path: response});
+        data = res.value;
+      }else if(response.endsWith('.pdf')){
+        let dataBuffer = fs.readFileSync(response);
+        const res = await pdf(dataBuffer);
+        data = res.text;
       }
-    });
-    return data.value;
+      fs.unlink(response, (err) => {
+        if (err) {
+          logger.error('Error deleting file:', err);
+        }
+      });
+      return data;
+    } catch (error) {
+      logger.error('Error getting file as text:', error);
+      return ''
+    }
 }
 
 

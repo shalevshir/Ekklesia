@@ -20,6 +20,9 @@ export class Category {
 
     @prop({ ref: Committee })
     committee?: Ref<Committee>;
+
+    @prop({ type: [Number]})
+    vector?: number[];
 }
 
 const CategoryModel = getModelForClass(Category)

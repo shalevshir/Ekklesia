@@ -4,6 +4,20 @@ import billRepo from "./bill.repo";
 
 
 class billWorker {
+
+    async fetchBills(job:any){
+        try {
+            logger.info({message:"Fetch bills process started", jobId: job.id});
+            await billRepo.fetchBillsFromKnesset();
+            logger.info("Fetching bills process finished");
+            return true;
+        } catch (error) {
+            logger.error("Error in fetchBills", error);
+            throw error;
+        }
+    }
+        
+
     async updateBillsMainCategory(job:any){
         try {
             logger.info({message:"Update bills main category process started", jobId: job.id});
