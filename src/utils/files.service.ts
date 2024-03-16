@@ -21,7 +21,7 @@ async function getFileAsText(url: string): Promise<string | undefined>  {
     try {
       const response = await downloadAndSaveFile(url);
       let data
-      if(response.endsWith('.docx')){
+      if(response.endsWith('.docx') || response.endsWith('.doc')){
         const res = await mammoth.extractRawText({path: response});
         data = res.value;
       }else if(response.endsWith('.pdf')){
