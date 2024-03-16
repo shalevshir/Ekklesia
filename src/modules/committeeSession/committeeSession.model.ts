@@ -10,13 +10,13 @@ enum SessionType {
   Secret = "secret",
 }
 
-enum AttendeeRole {
+export enum AttendeeRole {
   Chairman = "chairman",
   Member = "member",
   Guest = "guest",
 }
 
-class Attendee {
+export class Attendee {
   @prop({ ref: Person })
   person!: Ref<Person>;
 
