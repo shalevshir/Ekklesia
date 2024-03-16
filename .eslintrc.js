@@ -161,6 +161,7 @@ const config = {
      * Enable your own typescript rules.
      */
       rules: {
+        '@typescript-eslint/no-explicit-any': 'warn',
         'new-cap': 'off',
         'unused-imports/no-unused-imports': 'error',
         'import/first': 'error',
