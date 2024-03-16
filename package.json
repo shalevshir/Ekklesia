@@ -18,6 +18,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@huggingface/inference": "^2.6.6",
+    "@langchain/community": "^0.0.40",
+    "@langchain/core": "^0.1.48",
+    "@langchain/mongodb": "^0.0.1",
     "@langchain/openai": "^0.0.14",
     "@typegoose/typegoose": "^12.1.0",
     "axios": "^1.4.0",
