@@ -9,8 +9,8 @@ export class Query extends TimeStamps {
   @prop({ index: true, required: true})
   name!: string;
 
-  @prop({ required: true })
-  originId!: string;
+  @prop({unique:true, required: true, type: Number })
+  originId!: number;
 
   @prop()
   queryLink?: string;

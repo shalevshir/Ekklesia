@@ -5,8 +5,8 @@ export class Ministry {
     @prop({ required: true })
     name!: string;
 
-    @prop({ required: true })
-    originId!: string;
+    @prop({unique:true, required: true })
+    originId!: number;
 }
 
 const MinistryModel = getModelForClass(Ministry); 

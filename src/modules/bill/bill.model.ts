@@ -17,8 +17,8 @@ class VoteSchema {
   @prop({ enum: Vote, default: Vote.NO_VOTE})
   vote?: Vote;
 
-  @prop({ type: String })
-  originId?: string;
+  @prop({ type: Number })
+  originId?: number;
 
   @prop({ type: String })
   sessionId?: string;
@@ -43,8 +43,8 @@ export class StageSchema {
 }
 
 export class Bill {
-  @prop({ required: true })
-  originId!: string;
+  @prop({ required: true, unique: true, type: Number})
+  originId!: number;
 
   @prop({ required: true })
   name!: string;

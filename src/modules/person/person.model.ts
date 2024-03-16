@@ -34,8 +34,8 @@ class Committee {
 
 
 class Faction {
-  @prop()
-  originId?: string;
+  @prop({ type: Number })
+  originId?: number;
 
   @prop()
   name?: string;
@@ -88,8 +88,8 @@ export class Person {
   @prop()
   email?: string;
 
-  @prop({unique:true})
-  originId?: string;
+  @prop({unique:true, required:true, type: Number})
+  originId?: number;
 }
 
 
