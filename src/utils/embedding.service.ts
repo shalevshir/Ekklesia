@@ -33,7 +33,7 @@ class EmbeddingService {
         inputs: query
       }, {
         headers: {
-          'Authorization ': 'Bearer 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',
+          'Authorization ': 'Bearer ' + process.env.HUGGINGFACEHUB_API_KEY,
           'Content-Type': 'application/json'
         }
       });
