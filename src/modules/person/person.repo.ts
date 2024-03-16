@@ -5,8 +5,27 @@ import committeeRepo from "../committee/committee.repo";
 import ministryRepo from "../ministry/ministry.repo";
 import { mapIdToRole } from "../../types/roles.enum";
 class PersonRepo extends BaseRepo<Person> {
+  private _peopleList: Person[] = []
+  private _lastFetch: Date = new Date(0);
+  private readonly _fetchInterval = 1000 * 60 * 60 * 24; // 24 hours
+
   constructor() {
     super(PersonModel);
+  }
+  public get peopleList() {
+    // if the last fetch was more than 24 hours ago, reset the list
+    if(this._lastFetch.getTime() + this._fetchInterval < new Date().getTime()) {
+      this._peopleList = [];
+    }
+
+    if(this._peopleList.length === 0) {
+      return this.find({}).then((people) => {
+        this._peopleList = people;
+        this._lastFetch = new Date();
+        return people;
+      });
+    }
+    return this._peopleList;
   }
 
   async createPersonFromKnessetApi() {
@@ -80,6 +99,18 @@ class PersonRepo extends BaseRepo<Person> {
       isCurrent: true,
     }));
     return roles;
+  }
+
+  async getPersonByFullNameHeb(name: string| RegExp) {
+    try {
+      return (await this.peopleList).find((person) => {
+        const personName = `${person.firstNameHeb} ${person.lastNameHeb}`;
+        // check if regex matches the name
+        return name instanceof RegExp ? name.test(personName) : personName.includes(name);
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }
 }
 

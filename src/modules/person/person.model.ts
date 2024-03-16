@@ -88,7 +88,7 @@ export class Person {
   @prop()
   email?: string;
 
-  @prop()
+  @prop({unique:true})
   originId?: string;
 }
 
