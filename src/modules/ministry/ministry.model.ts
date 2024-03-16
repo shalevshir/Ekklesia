@@ -3,11 +3,11 @@ import { prop, getModelForClass, modelOptions } from '@typegoose/typegoose';
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Ministry {
     @prop({ required: true })
-    name!: string;
+      name!: string;
 
-    @prop({unique:true, required: true })
-    originId!: number;
+    @prop({ unique: true, required: true })
+      originId!: number;
 }
 
-const MinistryModel = getModelForClass(Ministry); 
+const MinistryModel = getModelForClass(Ministry);
 export default MinistryModel;

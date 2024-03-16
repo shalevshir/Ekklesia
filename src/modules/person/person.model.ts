@@ -1,95 +1,89 @@
-import { prop, getModelForClass, Ref, modelOptions } from "@typegoose/typegoose";
-import { rolesEnum } from "../../types/roles.enum";
-import { Ministry } from "../ministry/ministry.model";
+import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose';
+import { rolesEnum } from '../../types/roles.enum';
+import { Ministry } from '../ministry/ministry.model';
 
 class Role {
   @prop({ enum: rolesEnum })
-  title?: string;
+    title?: string;
 
   @prop()
-  startDate?: Date;
+    startDate?: Date;
 
   @prop()
-  endDate?: Date;
+    endDate?: Date;
 
   @prop()
-  isCurrent?: boolean;
+    isCurrent?: boolean;
 }
-
-class Block {
-  @prop({ enum: ["coalition", "opposition"] })
-  name?: string;
-}
-
 class Committee {
   @prop()
-  name?: string;
+    name?: string;
 
-  @prop({ ref: "Committee" })
-  committeeId?: Ref<Committee>;
+  @prop({ ref: 'Committee' })
+    committeeId?: Ref<Committee>;
 
   @prop()
-  isChairman?: boolean;
+    isChairman?: boolean;
 }
 
 
 class Faction {
   @prop({ type: Number })
-  originId?: number;
+    originId?: number;
 
   @prop()
-  name?: string;
+    name?: string;
 
   @prop()
-  displayName?: string;
+    displayName?: string;
 
-  @prop({ enum: ["coalition", "opposition"] })
-  block?: string;
+  @prop({ enum: [ 'coalition', 'opposition' ] })
+    block?: string;
 }
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Person {
   @prop()
-  firstName?: string;
+    firstName?: string;
 
   @prop()
-  lastName?: string;
+    lastName?: string;
 
   @prop()
-  firstNameHeb?: string;
+    firstNameHeb?: string;
 
   @prop()
-  lastNameHeb?: string;
+    lastNameHeb?: string;
 
   @prop()
-  age?: number;
+    age?: number;
 
-  @prop({ enum: ["male", "female"] })
-  gender?: string;
+  @prop({ enum: [ 'male', 'female' ] })
+    gender?: string;
 
   @prop({ _id: false, type: [ Role ] })
-  roles?: Role[];
+    roles?: Role[];
 
   @prop()
-  dateOfBirth?: Date;
+    dateOfBirth?: Date;
 
   @prop()
-  residence?: string;
+    residence?: string;
 
   @prop({ _id: false })
-  faction?: Faction;
+    faction?: Faction;
 
   @prop({ type: [ Committee ] })
-  committees?: Committee[];
+    committees?: Committee[];
 
   @prop({ type: [ Ministry ] })
-  minister?: Ref<Ministry>[];
+    minister?: Ref<Ministry>[];
 
   @prop()
-  email?: string;
+    email?: string;
 
-  @prop({unique:true, required:true, type: Number})
-  originId?: number;
+  @prop({ unique: true, required: true, type: Number })
+    originId?: number;
 }
 
 

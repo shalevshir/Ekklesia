@@ -19,37 +19,37 @@ enum CommitteeSubType {
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Committee {
   @prop({ required: true, unique: true, type: Number })
-  originId!: number;
+    originId!: number;
 
   @prop({ required: true })
-  name!: string;
+    name!: string;
 
   @prop()
-  knessetNum?: number;
+    knessetNum?: number;
 
   @prop({ enum: CommitteeType })
-  type?: CommitteeType;
+    type?: CommitteeType;
 
   @prop({ enum: CommitteeSubType })
-  subType?: CommitteeSubType;
+    subType?: CommitteeSubType;
 
   @prop()
-  email?: string;
+    email?: string;
 
   @prop({ ref: 'Committee' })
-  parentCommittee?: Ref<Committee>;
+    parentCommittee?: Ref<Committee>;
 
   @prop({ ref: 'Person' })
-  headOfCommittee?: Ref<Person>;
+    headOfCommittee?: Ref<Person>;
 
   @prop({ ref: 'Person' })
-  members?: Ref<Person>[];
+    members?: Ref<Person>[];
 
   @prop({ ref: 'CommitteeSession' })
-  sessions?: Ref<CommitteeSession>[];
+    sessions?: Ref<CommitteeSession>[];
 
   @prop({ ref: 'Bill' })
-  bills?: Ref<Bill>[];
+    bills?: Ref<Bill>[];
 }
 
 const CommitteeModel = getModelForClass(Committee);

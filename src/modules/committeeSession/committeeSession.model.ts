@@ -1,69 +1,69 @@
-import { prop, getModelForClass, Ref, modelOptions } from "@typegoose/typegoose";
-import { Committee } from "../committee/committee.model";
-import { Bill } from "../bill/bill.model";
-import { Person } from "../person/person.model";
-import { Category } from "../category/category.model";
+import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose';
+import { Committee } from '../committee/committee.model';
+import { Bill } from '../bill/bill.model';
+import { Person } from '../person/person.model';
+import { Category } from '../category/category.model';
 
 enum SessionType {
-  Open = "open",
-  Tour = "tour",
-  Secret = "secret",
+  Open = 'open',
+  Tour = 'tour',
+  Secret = 'secret',
 }
 
 export enum AttendeeRole {
-  Chairman = "chairman",
-  Member = "member",
-  Guest = "guest",
+  Chairman = 'chairman',
+  Member = 'member',
+  Guest = 'guest',
 }
 
 export class Attendee {
   @prop({ ref: Person })
-  person!: Ref<Person>;
+    person!: Ref<Person>;
 
   @prop({ enum: AttendeeRole })
-  role?: AttendeeRole;
+    role?: AttendeeRole;
 };
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class CommitteeSession {
-  @prop({ unique: true, required: true, type: Number})
-  originId!: number;
+  @prop({ unique: true, required: true, type: Number })
+    originId!: number;
 
   @prop({ type: Date })
-  date?: Date;
+    date?: Date;
 
   @prop()
-  topic?: string;
+    topic?: string;
 
   @prop({ type: Number })
-  sessionNumber?: number;
+    sessionNumber?: number;
 
   @prop({ enum: SessionType })
-  type?: SessionType;
+    type?: SessionType;
 
   @prop()
-  status?: string;
+    status?: string;
 
   @prop()
-  broadcastUrl?: string;
+    broadcastUrl?: string;
 
   @prop()
-  sessionUrl?: string;
+    sessionUrl?: string;
 
   @prop()
-  transcriptUrl?: string;
+    transcriptUrl?: string;
 
   @prop({ ref: Committee })
-  committee?: Ref<Committee>;
+    committee?: Ref<Committee>;
 
   @prop({ ref: Bill })
-  bills?: Ref<Bill>[];
- 
+    bills?: Ref<Bill>[];
+
   @prop({ type: [ Attendee ] })
-  attendees?: [ Attendee ];
+    attendees?: [ Attendee ];
 
   @prop({ ref: Category })
-  categories?: Ref<Category>[];
+    categories?: Ref<Category>[];
 }
 
 const CommitteeSessionModel = getModelForClass(CommitteeSession);

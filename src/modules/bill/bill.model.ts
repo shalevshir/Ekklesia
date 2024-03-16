@@ -11,93 +11,93 @@ export enum Vote {
 }
 
 class VoteSchema {
-  @prop({ required:true, ref: Person })
-  person!: Ref<Person>;
+  @prop({ required: true, ref: Person })
+    person!: Ref<Person>;
 
-  @prop({ enum: Vote, default: Vote.NO_VOTE})
-  vote?: Vote;
+  @prop({ enum: Vote, default: Vote.NO_VOTE })
+    vote?: Vote;
 
   @prop({ type: Number })
-  originId?: number;
+    originId?: number;
 
   @prop({ type: String })
-  sessionId?: string;
+    sessionId?: string;
 }
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class StageSchema {
-  @prop({ enum: ['first-reading', 'second-reading', 'committee', 'third-reading'] })
-  name?: string;
+  @prop({ enum: [ 'first-reading', 'second-reading', 'committee', 'third-reading' ] })
+    name?: string;
 
   @prop()
-  description?: string;
+    description?: string;
 
   @prop()
-  date?: Date;
+    date?: Date;
 
   @prop({ type: [ VoteSchema ] })
-  votes?: VoteSchema[];
+    votes?: VoteSchema[];
 
   @prop({ type: String })
-  result?: string;
+    result?: string;
 }
 
 export class Bill {
-  @prop({ required: true, unique: true, type: Number})
-  originId!: number;
+  @prop({ required: true, unique: true, type: Number })
+    originId!: number;
 
   @prop({ required: true })
-  name!: string;
+    name!: string;
 
   @prop()
-  number?: number;
+    number?: number;
 
   @prop()
-  pNumber?: number;
+    pNumber?: number;
 
   @prop()
-  displayName?: string;
+    displayName?: string;
 
   @prop()
-  summary?: string;
+    summary?: string;
 
   @prop()
-  topic?: string;
+    topic?: string;
 
   @prop()
-  billLink?: string;
+    billLink?: string;
 
-  @prop({ enum: ['governmental', 'private', 'committee'] })
-  type?: string;
-
-  @prop()
-  status?: string;
+  @prop({ enum: [ 'governmental', 'private', 'committee' ] })
+    type?: string;
 
   @prop()
-  date?: Date;
+    status?: string;
+
+  @prop()
+    date?: Date;
 
   @prop({ ref: Committee })
-  committee?: Ref<Committee>;
+    committee?: Ref<Committee>;
 
   @prop({ ref: Array<Person> })
-  initiators?: Ref<Person>[];
+    initiators?: Ref<Person>[];
 
   @prop({ type: [ StageSchema ] })
-  stages?: StageSchema[];
+    stages?: StageSchema[];
 
   @prop({ ref: Array<Category> })
-  categories?: Ref<Category>[];
+    categories?: Ref<Category>[];
 
-  @prop({ type: String})
-  documentLink?: string;
+  @prop({ type: String })
+    documentLink?: string;
 
   @prop({ type: [ Number ] })
-  vector?: number[];
+    vector?: number[];
 
   @prop({ type: [ Category ] })
-  newCategories?: Category[];
+    newCategories?: Category[];
 }
 
-const BillModel = getModelForClass(Bill)
+const BillModel = getModelForClass(Bill);
 
 export default BillModel;

@@ -1,30 +1,30 @@
-import { prop, getModelForClass, Ref, modelOptions } from "@typegoose/typegoose";
-import { Committee } from "../committee/committee.model";
+import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose';
+import { Committee } from '../committee/committee.model';
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Category {
-    @prop({ required:true })
-    name!: string;
+    @prop({ required: true })
+      name!: string;
 
     @prop()
-    description?: string;
+      description?: string;
 
     @prop()
-    icon?: string;
+      icon?: string;
 
     @prop()
-    isMainCategory!: boolean;
+      isMainCategory!: boolean;
 
     @prop({ ref: Category })
-    subCategories?: Ref<Category>[];
+      subCategories?: Ref<Category>[];
 
     @prop({ ref: Committee })
-    committee?: Ref<Committee>;
+      committee?: Ref<Committee>;
 
-    @prop({ type: [Number]})
-    vector?: number[];
+    @prop({ type: [ Number ] })
+      vector?: number[];
 }
 
-const CategoryModel = getModelForClass(Category)
+const CategoryModel = getModelForClass(Category);
 
 export default CategoryModel;
