@@ -1,7 +1,7 @@
 import { ReturnModelType } from "@typegoose/typegoose";
 import { DocumentType } from "@typegoose/typegoose";
 import { AnyParamConstructor } from "@typegoose/typegoose/lib/types";
-import { FilterQuery } from 'mongoose'
+import { FilterQuery, PipelineStage } from 'mongoose'
 
 class BaseRepo <T> {
   model: ReturnModelType<AnyParamConstructor<T>>;
@@ -62,6 +62,10 @@ class BaseRepo <T> {
       new: true,
     });
     return result;
+  }
+
+  async aggregate(pipeline: PipelineStage[]) {
+    return await this.model.aggregate(pipeline);
   }
 }
 
