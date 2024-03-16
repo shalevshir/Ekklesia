@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "wix.vscode-import-cost",
+    "github.vscode-pull-request-github",
+    "streetsidesoftware.code-spell-checker-hebrew"
+  ]
+}
