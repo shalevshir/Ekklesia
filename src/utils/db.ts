@@ -1,9 +1,10 @@
 import { Connection } from 'mongoose';
 import { mongoose } from '@typegoose/typegoose';
+import { envVars } from './envVars';
 
-const dbName = process.env.DB_NAME;
-const dbPass = process.env.DB_PASSWORD;
-const connectionUri = process.env.NODE_ENV === 'production' ?
+const dbName = envVars.DB_NAME;
+const dbPass = envVars.DB_PASSWORD;
+const connectionUri = envVars.NODE_ENV === 'production' ?
    `mongodb+srv://${ dbName }:${ dbPass }@ekklesia.xyo4j4r.mongodb.net/?retryWrites=true&w=majority` :
   'mongodb://localhost:27018';
 export let connection: Connection;
