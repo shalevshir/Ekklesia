@@ -1,11 +1,12 @@
-import BaseRepo from "../../abstracts/repo.abstract";
-import PersonModel, { Person } from "./person.model";
-import knessetApiService from "../../utils/knesset-api.service";
-import committeeRepo from "../committee/committee.repo";
-import ministryRepo from "../ministry/ministry.repo";
-import { mapIdToRole } from "../../types/roles.enum";
+import BaseRepo from '../../abstracts/repo.abstract';
+import PersonModel, { Person } from './person.model';
+import knessetApiService from '../../utils/knesset-api.service';
+import committeeRepo from '../committee/committee.repo';
+import ministryRepo from '../ministry/ministry.repo';
+import { mapIdToRole } from '../../types/roles.enum';
+
 class PersonRepo extends BaseRepo<Person> {
-  private _peopleList: Person[] = []
+  private _peopleList: Person[] = [];
   private _lastFetch: Date = new Date(0);
   private readonly _fetchInterval = 1000 * 60 * 60 * 24; // 24 hours
 
@@ -14,11 +15,11 @@ class PersonRepo extends BaseRepo<Person> {
   }
   public get peopleList() {
     // if the last fetch was more than 24 hours ago, reset the list
-    if(this._lastFetch.getTime() + this._fetchInterval < new Date().getTime()) {
+    if (this._lastFetch.getTime() + this._fetchInterval < new Date().getTime()) {
       this._peopleList = [];
     }
 
-    if(this._peopleList.length === 0) {
+    if (this._peopleList.length === 0) {
       return this.find({}).then((people) => {
         this._peopleList = people;
         this._lastFetch = new Date();
@@ -30,16 +31,16 @@ class PersonRepo extends BaseRepo<Person> {
 
   async createPersonFromKnessetApi() {
     const persons = await knessetApiService.getMks();
-    if(!persons) {
-      throw new Error("No persons found");
+    if (!persons) {
+      throw new Error('No persons found');
     }
     const arrangedPersons = await this.arrangeMks(persons);
-    await this.updateMany(arrangedPersons, { upsert:true } );
+    await this.updateMany(arrangedPersons, { upsert: true } );
   }
 
   async arrangeMks(persons: any[]) {
     for await (const person of persons) {
-      const committees = []
+      const committees = [];
       person.roles = new Set();
       for await (const position of person.positions) {
         // if (person.roles.has(position.PositionID)) {
@@ -48,31 +49,31 @@ class PersonRepo extends BaseRepo<Person> {
         if (position.CommitteeName) {
           const committee = await committeeRepo.findOrCreate({
             name: position.CommitteeName,
-            originId: position.CommitteeID,
+            originId: position.CommitteeID
           });
 
           committees.push({
             name: position.CommitteeName,
             committeeId: committee.doc._id,
             isChairman:
-              position.PositionID == 41? true : false,
+              position.PositionID == 41 ? true : false
           });
           person.roles.add(position.PositionID);
         } else if (position.GovMinistryName) {
           const ministry = await ministryRepo.findOrCreate({
             name: position.GovMinistryName,
-            originId: position.GovMinistryID,
+            originId: position.GovMinistryID
           });
-          person.minister ? person.minister.push(ministry.doc._id) : (person.minister = [ministry.doc._id]);
-        } else if(position.FactionName) {
+          person.minister ? person.minister.push(ministry.doc._id) : (person.minister = [ ministry.doc._id ]);
+        } else if (position.FactionName) {
           person.faction = {
             displayName: position.FactionName,
             name: position.FactionName,
-            originId: position.FactionID,
+            originId: position.FactionID
           };
           person.roles.add(position.PositionID);
         } else {
-            person.roles.add(position.PositionID);
+          person.roles.add(position.PositionID);
         }
       }
       person.committees = committees;
@@ -85,32 +86,32 @@ class PersonRepo extends BaseRepo<Person> {
       firstNameHeb: mk.FirstName,
       lastNameHeb: mk.LastName,
       email: mk.Email,
-      gender: mk.GenderDesc === "זכר" ? "male" : "female",
+      gender: mk.GenderDesc === 'זכר' ? 'male' : 'female',
       faction: mk.faction,
       roles: this.mapRoles(mk.roles),
       committees: mk.committees,
-      minister: mk.minister,
+      minister: mk.minister
     } as Person));
   }
 
   mapRoles(positions: Set<number>) {
-    const roles = [...positions].map((roleId) => ({
+    const roles = [ ...positions ].map((roleId) => ({
       title: mapIdToRole[roleId],
-      isCurrent: true,
+      isCurrent: true
     }));
     return roles;
   }
 
+  async getPersonByOriginId(originId: number) {
+    return (await this.peopleList).find((person) => person.originId === originId);
+  }
+
   async getPersonByFullNameHeb(name: string| RegExp) {
-    try {
-      return (await this.peopleList).find((person) => {
-        const personName = `${person.firstNameHeb} ${person.lastNameHeb}`;
-        // check if regex matches the name
-        return name instanceof RegExp ? name.test(personName) : personName.includes(name);
-      });
-    } catch (error) {
-      console.error(error);
-    }
+    return (await this.peopleList).find((person) => {
+      const personName = `${ person.firstNameHeb } ${ person.lastNameHeb }`;
+      // check if regex matches the name
+      return name instanceof RegExp ? name.test(personName) : personName.includes(name);
+    });
   }
 }
 
