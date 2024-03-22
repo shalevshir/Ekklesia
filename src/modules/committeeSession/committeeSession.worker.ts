@@ -1,10 +1,10 @@
 import committeeSessionRepo from './committeeSession.repo';
-import { Job } from 'bull';
+import { DoneCallback, Job } from 'bull';
 import logger from '../../utils/logger';
 import committeeRepo from '../committee/committee.repo';
 
 class CommitteeSessionWorker {
-  async fetchCommitteesSessions(job: Job, done: () => void) {
+  async fetchCommitteesSessions(job: Job, done: DoneCallback) {
     try {
       logger.info({ message: 'Fetch committees sessions process started', jobId: job.id });
       done();
