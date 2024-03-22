@@ -30,6 +30,7 @@ const startWorker = async () => {
 
   // CommitteeSession
   workerQueue.process('updateCommitteeSessions', committeeSessionWorker.fetchCommitteesSessions);
+
   logger.info('Worker is running...');
 };
 
