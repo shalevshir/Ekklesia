@@ -31,23 +31,24 @@ class PersonRepo extends BaseRepo<Person> {
   }
 
   async fetchPeopleFromKnessetApi() {
-    const persons = await knessetApiService.getMks();
-    logger.info(`Found ${ persons?.length } persons`);
-    if (!persons) {
-      throw new Error('No persons found');
+    const people = await knessetApiService.getMks();
+    logger.info(`Found ${ people?.length } People`);
+    if (!people) {
+      throw new Error('No People found');
     }
-    const arrangedPersons = await this.arrangeMks(persons);
-    await this.updateMany(arrangedPersons, { upsert: true } );
+    const arrangedPeople = await this.arrangeMks(people);
+    await this.updateMany(arrangedPeople, { upsert: true } );
   }
 
-  async arrangeMks(persons: any[]) {
-    for await (const person of persons) {
+  async arrangeMks(people: any[]) {
+    for await (const person of people) {
       logger.info({ message: 'Arranging person', person });
       const committees = new Set();
       person.roles = new Set();
       for (const position of person.positions) {
         person.roles.add(position.PositionID);
         if (position.CommitteeName) {
+          // eslint-disable-next-line no-await-in-loop
           const committee = await committeeRepo.findOrCreate({
             originId: position.CommitteeID
           }, {
@@ -65,6 +66,7 @@ class PersonRepo extends BaseRepo<Person> {
               position.PositionID == 41 ? true : false
           });
         } else if (position.GovMinistryName) {
+          // eslint-disable-next-line no-await-in-loop
           const ministry = await ministryRepo.findOrCreate({
             originId: position.GovMinistryID
           }, {
@@ -86,7 +88,7 @@ class PersonRepo extends BaseRepo<Person> {
       person.committees = committees;
       logger.info({ message: 'Person arranged', person });
     }
-    return this.mapMKs(persons);
+    return this.mapMKs(people);
   }
   mapMKs(mksArray: any[]): Person[] {
     return mksArray.map((mk) => ({
