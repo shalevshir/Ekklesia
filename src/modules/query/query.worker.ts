@@ -1,9 +1,10 @@
 import queryRepo from './query.repo';
 import logger from '../../utils/logger';
+import { Job } from 'bull';
 
 
 class queriesWorker {
-  async fetchQueries(job: any, done: Function) {
+  async fetchQueries(job: Job, done: () => void) {
     try {
       logger.info({ message: 'Fetch queries process started', jobId: job.id });
       done();
