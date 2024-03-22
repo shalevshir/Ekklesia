@@ -1,3 +1,4 @@
+import { DoneCallback, Job } from 'bull';
 import { OpenAIEmbeddings } from '@langchain/openai';
 import categoryRepo from '../modules/category/category.repo';
 import { MongoDBAtlasVectorSearch } from '@langchain/mongodb';
@@ -6,6 +7,7 @@ import { connection } from './db';
 import logger from './logger';
 import { HuggingFaceInferenceEmbeddings } from '@langchain/community/embeddings/hf';
 import axios from 'axios';
+import { envVars } from './envVars';
 
 class EmbeddingService {
   hfEmbeddings = new HuggingFaceInferenceEmbeddings({
@@ -33,7 +35,7 @@ class EmbeddingService {
         inputs: query
       }, {
         headers: {
-          'Authorization ': 'Bearer ' + process.env.HUGGINGFACEHUB_API_KEY,
+          'Authorization ': 'Bearer ' + envVars.HUGGINGFACEHUB_API_KEY,
           'Content-Type': 'application/json'
         }
       });
@@ -83,7 +85,7 @@ class EmbeddingService {
     return vectorStore;
   }
 
-  async vectorizeCategories(job: any, done: any) {
+  async vectorizeCategories(job: Job, done: DoneCallback) {
     logger.info('Vectorizing categories');
     try {
       done();

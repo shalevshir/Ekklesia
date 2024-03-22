@@ -1,7 +1,6 @@
-import { ReturnModelType } from "@typegoose/typegoose";
-import { DocumentType } from "@typegoose/typegoose";
-import { AnyParamConstructor } from "@typegoose/typegoose/lib/types";
-import { FilterQuery, PipelineStage } from 'mongoose'
+import { ReturnModelType, DocumentType } from '@typegoose/typegoose';
+import { AnyParamConstructor } from '@typegoose/typegoose/lib/types';
+import { FilterQuery, PipelineStage } from 'mongoose';
 
 class BaseRepo <T> {
   model: ReturnModelType<AnyParamConstructor<T>>;
@@ -36,7 +35,7 @@ class BaseRepo <T> {
       toPromise.push(
         this.model.findOneAndUpdate({ originId: item.originId }, item, {
           new: true,
-          upsert: options.upsert,
+          upsert: options.upsert
         }).exec()
       );
     }
@@ -47,19 +46,19 @@ class BaseRepo <T> {
     return await this.model.findOneAndDelete(query);
   }
 
-  async findOrCreate(criteria: FilterQuery<T>) {
+  async findOrCreate(criteria: FilterQuery<T>, data: FilterQuery<T>) {
     const result = await this.model.findOne(criteria);
     if (result) {
       return { doc: result, created: false };
     } else {
-      const newDoc = await this.model.create(criteria);
+      const newDoc = await this.model.create(data);
       return { doc: newDoc, created: true };
     }
   }
 
   async findAndUpdate(criteria: FilterQuery<T>, data: FilterQuery<T>) {
     const result = await this.model.findOneAndUpdate(criteria, data, {
-      new: true,
+      new: true
     });
     return result;
   }
