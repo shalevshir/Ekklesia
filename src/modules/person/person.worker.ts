@@ -1,9 +1,9 @@
-import { Job } from 'bull';
+import { DoneCallback, Job } from 'bull';
 import logger from '../../utils/logger';
 import personRepo from './person.repo';
 
 class PersonWorker {
-  async fetchPeople(job: Job, done: () => void) {
+  async fetchPeople(job: Job, done: DoneCallback) {
     try {
       logger.info({ message: 'Fetch people process started', jobId: job.id });
       done();
