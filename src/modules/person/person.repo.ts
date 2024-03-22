@@ -4,11 +4,12 @@ import knessetApiService from '../../utils/knesset-api.service';
 import committeeRepo from '../committee/committee.repo';
 import ministryRepo from '../ministry/ministry.repo';
 import { mapIdToRole } from '../../types/roles.enum';
+import logger from '../../utils/logger';
 
 class PersonRepo extends BaseRepo<Person> {
   private _peopleList: Person[] = [];
   private _lastFetch: Date = new Date(0);
-  private readonly _fetchInterval = 1000 * 60 * 60 * 24; // 24 hours
+  private readonly _fetchInterval = 1000 * 60 * 60 * 24;
 
   constructor() {
     super(PersonModel);
@@ -29,8 +30,9 @@ class PersonRepo extends BaseRepo<Person> {
     return this._peopleList;
   }
 
-  async createPersonFromKnessetApi() {
+  async fetchPeopleFromKnessetApi() {
     const persons = await knessetApiService.getMks();
+    logger.info(`Found ${ persons?.length } persons`);
     if (!persons) {
       throw new Error('No persons found');
     }
@@ -40,30 +42,38 @@ class PersonRepo extends BaseRepo<Person> {
 
   async arrangeMks(persons: any[]) {
     for await (const person of persons) {
-      const committees = [];
+      logger.info({ message: 'Arranging person', person });
+      const committees = new Set();
       person.roles = new Set();
-      for await (const position of person.positions) {
-        // if (person.roles.has(position.PositionID)) {
-        //   continue;
-        // }
+      for (const position of person.positions) {
+        person.roles.add(position.PositionID);
         if (position.CommitteeName) {
           const committee = await committeeRepo.findOrCreate({
+            originId: position.CommitteeID
+          }, {
             name: position.CommitteeName,
             originId: position.CommitteeID
           });
+          if (committee.created) {
+            logger.info('Created committee', committee.doc._id);
+          }
 
-          committees.push({
+          committees.add({
             name: position.CommitteeName,
             committeeId: committee.doc._id,
             isChairman:
               position.PositionID == 41 ? true : false
           });
-          person.roles.add(position.PositionID);
         } else if (position.GovMinistryName) {
           const ministry = await ministryRepo.findOrCreate({
+            originId: position.GovMinistryID
+          }, {
             name: position.GovMinistryName,
             originId: position.GovMinistryID
           });
+          if (ministry.created) {
+            logger.info('Created ministry', ministry.doc._id);
+          }
           person.minister ? person.minister.push(ministry.doc._id) : (person.minister = [ ministry.doc._id ]);
         } else if (position.FactionName) {
           person.faction = {
@@ -71,12 +81,10 @@ class PersonRepo extends BaseRepo<Person> {
             name: position.FactionName,
             originId: position.FactionID
           };
-          person.roles.add(position.PositionID);
-        } else {
-          person.roles.add(position.PositionID);
         }
       }
       person.committees = committees;
+      logger.info({ message: 'Person arranged', person });
     }
     return this.mapMKs(persons);
   }
