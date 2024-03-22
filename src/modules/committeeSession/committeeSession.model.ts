@@ -4,7 +4,7 @@ import { Bill } from '../bill/bill.model';
 import { Person } from '../person/person.model';
 import { Category } from '../category/category.model';
 
-enum SessionType {
+export enum SessionType {
   Open = 'open',
   Tour = 'tour',
   Secret = 'secret',
@@ -60,7 +60,7 @@ export class CommitteeSession {
     bills?: Ref<Bill>[];
 
   @prop({ type: [ Attendee ] })
-    attendees?: [ Attendee ];
+    attendees?: Attendee[];
 
   @prop({ ref: Category })
     categories?: Ref<Category>[];

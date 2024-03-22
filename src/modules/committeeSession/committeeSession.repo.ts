@@ -1,64 +1,80 @@
 import { DocumentType } from '@typegoose/typegoose';
 import BaseRepo from '../../abstracts/repo.abstract';
-import CommitteeSessionModel, { Attendee, AttendeeRole, CommitteeSession } from './committeeSession.model';
+import CommitteeSessionModel, { Attendee, AttendeeRole, CommitteeSession, SessionType } from './committeeSession.model';
 import knessetApiService from '../../utils/knesset-api.service';
-import committeeRepo from '../committee/committee.repo';
-import _ from 'lodash';
 import { getFileAsText } from '../../utils/files.service';
-import { logger } from '@typegoose/typegoose/lib/logSettings';
 import personRepo from '../person/person.repo';
+import { Committee } from '../committee/committee.model';
+import logger from '../../utils/logger';
 
 class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
   constructor() {
     super(CommitteeSessionModel);
   }
 
-  async fetchCommitteesSessions(committeeId: number) {
+  async fetchCommitteesSessions(committee: DocumentType<Committee>) {
+    logger.info('Fetching sessions for committee: ' + committee._id);
     const committeesSessions = await knessetApiService.getCommitteeSessions(
-      committeeId
+      committee.originId
     );
+    logger.info( `Fetched ${ committeesSessions.length } sessions` );
     const arrangedCommitteesSessions = await this.arrangeCommitteesSessions(
+      committee,
       committeesSessions
     );
 
-    await this.findOrCreate(arrangedCommitteesSessions);
+    const res = await this.updateMany(arrangedCommitteesSessions, { upsert: true });
+    const sessionIds = res.map((session) => session._id);
+    logger.info(`Updated ${ sessionIds.length } sessions`);
+    logger.info('Updating committee with sessions');
+    committee.sessions = sessionIds;
+    await committee.save();
   }
 
-  async arrangeCommitteesSessions(committeesSessions: any[]) {
-    for await (const committeeSession of committeesSessions) {
-      const committee = await committeeRepo.findOne({
-        originId: committeeSession.CommitteeID
-      });
-      if (!committee) {
-        console.log('committee not found', committeeSession.CommitteeID);
-        continue;
+  async arrangeCommitteesSessions(
+    committee: DocumentType<Committee>, committeesSessions: any[]
+  ): Promise<CommitteeSession[]> {
+    const sessionsToSave: CommitteeSession[] = [];
+    const allMissingAttendees: any[] = [];
+    for (const session of committeesSessions) {
+      const mappedSession: Partial<CommitteeSession> = {};
+      const transcript = await this.getTranscriptUrl(session.CommitteeSessionID);
+      mappedSession.transcriptUrl = transcript;
+      const attendees = await this.getAttendees(session.CommitteeSessionID) as any;
+      if (attendees.attendees?.length) {
+        mappedSession.attendees = attendees.attendees;
       }
-      _.set(committeeSession, 'committee', committee._id);
+      if (attendees.missingAttendees?.length) {
+        logger.error('missingAttendees', { missing: attendees.missingAttendees, sessionId: session.CommitteeSessionID });
+        allMissingAttendees.push(...attendees.missingAttendees.map((attendee: any) => ({
+          ...attendee,
+          session: session.CommitteeSessionID
+        })));
+      }
+      mappedSession.committee = committee._id;
+      mappedSession.originId = session.CommitteeSessionID;
+      mappedSession.date = session.StartDate;
+      mappedSession.type = session.TypeDesc === 'פתוחה' ? SessionType.Open : SessionType.Secret;
+      mappedSession.sessionUrl = session.SessionUrl;
+      mappedSession.broadcastUrl = session.BroadcastUrl;
+      mappedSession.status = session.StatusDesc;
+      mappedSession.sessionNumber = session.Number;
+      sessionsToSave.push(mappedSession as CommitteeSession);
     }
-
-    return committeesSessions.map((committeeSession) => ({
-      originId: committeeSession.CommitteeSessionID,
-      committee: committeeSession.committee,
-      date: committeeSession.StartDate,
-      type: committeeSession.TypeDesc === 'פתוחה' ? 'open' : 'tour',
-      sessionUrl: committeeSession.SessionUrl,
-      broadcastUrl: committeeSession.BroadcastUrl,
-      status: committeeSession.StatusDesc,
-      sessionNumber: committeeSession.Number
-    }));
+    logger.info('missingAttendees', { missing: allMissingAttendees });
+    return sessionsToSave;
   }
 
-  async updateCommitteesSessions(committeeSession: DocumentType<CommitteeSession>) {
-    if (!committeeSession?.originId) {
-      console.log('committeeSession not found', committeeSession);
+  async getTranscriptUrl(committeeSessionId: number) {
+    if (!committeeSessionId) {
+      console.log('committeeSession not found', committeeSessionId);
       throw new Error('committeeSession not found');
     }
     const committeeTranscript =
       await knessetApiService.getCommitteeSessionTranscript(
-        committeeSession.originId
+        committeeSessionId
       );
-    committeeSession.transcriptUrl = committeeTranscript;
-    await committeeSession.save();
+    return committeeTranscript?.length ? committeeTranscript[0].FilePath : '';
   }
 
   getAttendees = async (committeeSessionId: number) => {
@@ -74,25 +90,27 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
     return attendees;
   };
 
-  parseTranscript = async (transcript: string) => {
+  parseTranscript = async (transcript: string): Promise<{
+    attendees: Attendee[];
+    missingAttendees: (Attendee | {
+        person: string;
+        role: AttendeeRole;
+    })[];
+}> => {
     const attendees: Attendee[] = [];
-    const missingAttendees = [];
+    const missingAttendees: any[] = [];
 
-    const text = transcript.split('נכחו')[1].split('מוזמנים')[0];
-    const membersText = text.split('חברי הוועדה:')[1].split('חברי הכנסת')[0];
+    const text = transcript.split('נכחו')[1]?.split('מוזמנים')[0];
+    const membersText = text.split('חברי הוועדה:')[1]?.split('חברי הכנסת')[0];
     const guestsMksText = text.split('חברי הכנסת:')[1]?.split('מוזמנים')[0];
 
-    const membersLines = membersText.split('\n\n');
-    if (!membersLines?.length) {
-      logger.error('membersLines not found', membersText);
-      return [];
-    }
+    const membersLines = membersText?.split('\n\n');
 
-    for (const line of membersLines) {
-      if (line.includes('משתתפים')) {
+    for (const line of membersLines || []) {
+      if (line.includes('משתתפים') || line.includes('חבר הכנסת')) {
         break;
       }
-      const role = line.includes('יו"ר') ? AttendeeRole.Chairman : AttendeeRole.Member;
+      const role = line.includes('יו"ר') || line.includes('יושב-ראש') ? AttendeeRole.Chairman : AttendeeRole.Member;
       const attendee = await this.extractAttendeesFromLine(line, role);
       if (!attendee) {
         continue;
@@ -127,12 +145,12 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
       return;
     }
     const firstName = words[0];
-    let lastName = words[1];
-    if ( words[2] && !words[2].includes('–') ) {
-      lastName += '.*' + words[2];
-    }
+    const lastName = words[1];
+    // if ( words[2] && !words[2].includes('–') && !words[2].includes('-')) {
+    //   lastName += '.*' + words[2];
+    // }
 
-    const name = new RegExp(`^${ firstName }.*${ lastName }$`);
+    const name = new RegExp(`^.*${ firstName }.*${ lastName }.*$`);
     // find in virtual name field
     const person = await personRepo.getPersonByFullNameHeb(name) as DocumentType<any>;
 
