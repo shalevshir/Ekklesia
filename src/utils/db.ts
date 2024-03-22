@@ -5,7 +5,7 @@ import { envVars } from './envVars';
 const dbName = envVars.DB_NAME;
 const dbPass = envVars.DB_PASSWORD;
 const connectionUri = envVars.NODE_ENV === 'production' ?
-   `mongodb+srv://${ dbName }:${ dbPass }@ekklesia.xyo4j4r.mongodb.net/?retryWrites=true&w=majority` :
+   `mongodb+srv://${ dbName }:${ dbPass }@ekklesia.xyo4j4r.mongodb.net/EkklesiaDb?retryWrites=true&w=majority` :
   'mongodb://localhost:27018';
 export let connection: Connection;
 const connectDB = async () => {
