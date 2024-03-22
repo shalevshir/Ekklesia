@@ -23,12 +23,9 @@ async function getFileAsText(url: string): Promise<string | undefined> {
     const response = await downloadAndSaveFile(url);
     let data;
     if (response.endsWith('.docx') || response.endsWith('.doc')) {
-      const res = await mammoth.extractRawText({ path: response });
-      data = res.value;
+      data = await extractTextFromDocx(response);
     } else if (response.endsWith('.pdf')) {
-      const dataBuffer = fs.readFileSync(response);
-      const res = await pdf(dataBuffer);
-      data = res.text;
+      data = await extractTextFromPdf(response);
     }
     fs.unlink(response, (err) => {
       if (err) {
@@ -42,12 +39,23 @@ async function getFileAsText(url: string): Promise<string | undefined> {
   }
 }
 
+async function extractTextFromDocx(filePath: string): Promise<string> {
+  const result = await mammoth.extractRawText({ path: filePath });
+  return result.value;
+}
+
+async function extractTextFromPdf(filePath: string): Promise<string> {
+  const dataBuffer = fs.readFileSync(filePath);
+  const result = await pdf(dataBuffer);
+  return result.text;
+}
+
 
 async function downloadAndSaveFile(url: string): Promise<string> {
   try {
     const response = await axios.get(url, { responseType: 'stream' });
     const fileName = path.basename(url);
-    const filePath = path.join(__dirname, '../..', 'public', fileName);
+    const filePath = path.join(__dirname, '../..', '.temp', fileName);
     const writer = fs.createWriteStream(filePath);
 
     response.data.pipe(writer);
