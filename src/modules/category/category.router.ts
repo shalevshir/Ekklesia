@@ -2,7 +2,6 @@ import express, { Request, Response } from 'express';
 import categoriesRepo from './category.repo';
 import { handleError } from '../../utils/errors.utils';
 import queryRepo from '../query/query.repo';
-import { getFileAsText } from '../../utils/files.service';
 // Create a new router instance
 const categoryRouter = express.Router();
 
@@ -31,7 +30,7 @@ categoryRouter.get('/query/:id', async (req: Request, res: Response) => {
     if (!query || !query.queryLink) {
       throw new Error(`Query ${ queryId } not found`);
     }
-    const queryText = await getFileAsText(query.queryLink);
+    // const queryText = await getFileAsText(query.queryLink);
 
     // const categorization = await embeddingService.categorizeQuery(queryText);
     // res.json(categorization).send();
