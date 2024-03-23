@@ -61,9 +61,12 @@ class BillsRepo extends BaseRepo<Bill> {
     const arrangedBills = await this.arrangeBills(billsData);
     await this.updateMany(arrangedBills, { upsert: true });
   }
+
   async arrangeBills(bills: any[]) {
+    logger.info(`Arranging ${ bills.length } bills`);
     const billsArranged: any[] = [];
     for await (const bill of bills) {
+      logger.info(`Arranging bill ${ bill.BillID }`);
       bill.initiator = [];
       const billType: string = this.types[bill.SubTypeID];
       const billStatus: string = this.statuses[bill.StatusID];
@@ -91,8 +94,10 @@ class BillsRepo extends BaseRepo<Bill> {
         committee: committee ? committee._id : null,
         initiators: bill.initiator
       };
+      logger.info(`Arranged bill ${ bill.BillID }`);
       billsArranged.push(arrangedBill);
     }
+    logger.info('Arranged all bills');
     return billsArranged;
   }
 
@@ -123,6 +128,7 @@ class BillsRepo extends BaseRepo<Bill> {
       const bills = await this.model.find({ categories: { $ne: null } }).lean() as any[];
       logger.info({ message: `Updating stages for ${ bills.length } bills ` });
       let billNumber = 1;
+      const toPromise = [];
       for (const bill of bills) {
         logger.info({ message: `updating bill #${ billNumber } out of ${ bills.length }`, billId: bill._id });
         const billData = await rawDataCollection.find({ 'Item ID': +bill.originId }).toArray();
@@ -155,7 +161,7 @@ class BillsRepo extends BaseRepo<Bill> {
           };
         }).filter((stage) => !!stage);
 
-        await this.model.findOneAndUpdate({ _id: bill._id }, { stages: mappedStages });
+        toPromise.push(this.model.findOneAndUpdate({ _id: bill._id }, { stages: mappedStages }));
         billNumber++;
         logger.info({ message: `Update stages for bill #${ billNumber } completed`, billId: bill._id });
       }

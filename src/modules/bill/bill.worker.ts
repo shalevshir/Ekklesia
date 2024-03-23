@@ -1,12 +1,14 @@
+import { DoneCallback, Job } from 'bull';
 import logger from '../../utils/logger';
 import committeeRepo from '../committee/committee.repo';
 import billRepo from './bill.repo';
 
 
 class billWorker {
-  async fetchBills(job: any) {
+  async fetchBills(job: Job, done: DoneCallback) {
     try {
       logger.info({ message: 'Fetch bills process started', jobId: job.id });
+      done();
       await billRepo.fetchBillsFromKnesset();
       logger.info('Fetching bills process finished');
       return true;
