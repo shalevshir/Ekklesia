@@ -2,6 +2,7 @@ import BaseRepo from '../../abstracts/repo.abstract';
 import CommitteeModel, { Committee } from './committee.model';
 import knessetApiService from '../../utils/knesset-api.service';
 import _ from 'lodash';
+import personRepo from '../person/person.repo';
 
 class CommitteeRepo extends BaseRepo<Committee> {
   typeEnum: Record<number, string> = {
@@ -66,10 +67,32 @@ class CommitteeRepo extends BaseRepo<Committee> {
         });
         _.set(committee, 'parentCommittee', parentCommittee?._id);
       }
+      const headOfCommittee = await personRepo.findOne({
+        'committees': {
+          '$elemMatch': {
+            'name': committee.Name,
+            'isChairman': true
+          }
+        }
+      });
+      committee.headOfCommittee = headOfCommittee?._id;
+
+      const committeeMembers = await personRepo.find({
+        'committees': {
+          '$elemMatch': {
+            'name': committee.Name,
+            'isChairman': false
+          }
+        }
+      });
+
+      _.set(committee, 'members', committeeMembers?.map((member: any) => member._id));
     }
 
     return committees.map((committee: any) => ({
       name: committee.Name,
+      headOfCommittee: committee.headOfCommittee,
+      members: committee.members,
       originId: committee.CommitteeID,
       email: committee.Email,
       type: this.typeEnum[committee.CommitteeTypeID],
