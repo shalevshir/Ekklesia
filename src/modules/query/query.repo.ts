@@ -1,67 +1,67 @@
-import BaseRepo from "../../abstracts/repo.abstract";
-import QueryModel, { Query } from "./query.model";
-import knessetApiService from "../../utils/knesset-api.service";
-import personRepo from "../person/person.repo";
-import ministryRepo from "../ministry/ministry.repo";
-import categoryRepo from "../category/category.repo";
-import logger from "../../utils/logger";
-import { Ministry } from "../ministry/ministry.model";
+import BaseRepo from '../../abstracts/repo.abstract';
+import QueryModel, { Query } from './query.model';
+import knessetApiService from '../../utils/knesset-api.service';
+import personRepo from '../person/person.repo';
+import ministryRepo from '../ministry/ministry.repo';
+import categoryRepo from '../category/category.repo';
+import logger from '../../utils/logger';
+import { Ministry } from '../ministry/ministry.model';
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 class QueryRepo extends BaseRepo<Query> {
-  typesEnum: Record<number,string> = {
-    48: "regular",
-    50: "urgent",
-    49: "direct",
+  typesEnum: Record<number, string> = {
+    48: 'regular',
+    50: 'urgent',
+    49: 'direct'
   };
-  statusEnum: Record<number,string> = {
-    6: "pending",
-    9: "answered",
+  statusEnum: Record<number, string> = {
+    6: 'pending',
+    9: 'answered'
   };
   constructor() {
     super(QueryModel);
   }
   async fetchQueriesFromKnesset() {
-    logger.info("Fetching queries from knesset");
+    logger.info('Fetching queries from knesset');
     const queriesData = await knessetApiService.getQueries();
-    logger.info({message:`fetched ${queriesData.length} queries from knesset`});
+    logger.info({ message: `fetched ${ queriesData.length } queries from knesset` });
     const arrangedQueries = await this.arrangeQueries(queriesData);
-    await this.updateMany(arrangedQueries, { upsert:true});
+    await this.updateMany(arrangedQueries, { upsert: true });
   }
 
   async arrangeQueries(queries: any[]): Promise<Query[]> {
     let queryNumber = 1;
-    let queriesToSave = [];
+    const queriesToSave = [];
     // queries = queries.splice(0, 3);
     for await (const query of queries) {
-      logger.info({message:`Mapping query #${queryNumber} out of ${queries.length}`, query});
-      if(!query.QueryID){
+      logger.info({ message: `Mapping query #${ queryNumber } out of ${ queries.length }`, query });
+      if (!query.QueryID) {
         query.QueryID = query.Id;
       }
-      const ministry =  await ministryRepo.findOne({
-        name: query.KNS_GovMinistry.Name,
+      const ministry = await ministryRepo.findOne({
+        name: query.KNS_GovMinistry.Name
       });
-      if(!ministry && query.KNS_GovMinistry.IsActive === true){
-        throw new Error(`Ministry ${query.KNS_GovMinistry.Name} not found`);
+      if (!ministry && query.KNS_GovMinistry.IsActive === true) {
+        throw new Error(`Ministry ${ query.KNS_GovMinistry.Name } not found`);
       }
       query.replyMinistry = ministry?._id;
       const categoryByMinistry = ministryRepo.getCategoryByMinistryName(query.KNS_GovMinistry.Name);
       query.categories = categoryByMinistry ? [ categoryByMinistry ] : [];
       const documents = await knessetApiService.getQueriesDocuments(query.Id);
-      for( let document of documents ? documents : []){
-        if (document && document.GroupTypeDesc === "שאילתה") {
+      for ( const document of documents ? documents : []) {
+        if (document && document.GroupTypeDesc === 'שאילתה') {
           query.queryLink = document.FilePath;
-        }else if(document && document.GroupTypeDesc === "תשובת השר"){
+        } else if (document && document.GroupTypeDesc === 'תשובת השר') {
           query.replyLink = document.FilePath;
-        }else {
-          throw new Error(`Document (ID:${document.Id}) type(${document.GroupTypeDesc}) not recognized`);
+        } else {
+          throw new Error(`Document (ID:${ document.Id }) type(${ document.GroupTypeDesc }) not recognized`);
         }
-      } 
+      }
 
       const person = await personRepo.findOne({ originId: query.PersonID });
       if (person) {
         query.PersonID = person?._id;
-      }else{
+      } else {
         delete query.PersonID;
       }
       const queryToSend: Query = {
@@ -75,10 +75,10 @@ class QueryRepo extends BaseRepo<Query> {
         replyMinistry: query.replyMinistry,
         queryLink: query.queryLink,
         replyLink: query.replyLink,
-        categories: query.categories,
+        categories: query.categories
       };
 
-      logger.info({message:`Query #${queryNumber} mapped`, query:queryToSend});
+      logger.info({ message: `Query #${ queryNumber } mapped`, query: queryToSend });
 
       queriesToSave.push(queryToSend);
       queryNumber++;
@@ -90,52 +90,50 @@ class QueryRepo extends BaseRepo<Query> {
   async getNextQuery() {
     // categories not exist or empty array
 
-    const query = await this.findOne({"$or": [{"categories": {"$exists": false}}, {"categories": []}]}, {populate: "replyMinistry"});
+    const query = await this.findOne({ '$or': [ { 'categories': { '$exists': false } }, { 'categories': [] } ] }, { populate: 'replyMinistry' });
     return query;
   }
 
   async addCategoryToQuery(queryId: number, categories: any[]) {
-    const queryObj = await this.findOne({_id: queryId});
+    const queryObj = await this.findOne({ _id: queryId });
     const toSave = [];
-    if(!queryObj){
-      throw new Error(`Query ${queryId} not found`);
+    if (!queryObj) {
+      throw new Error(`Query ${ queryId } not found`);
     }
-    for(const category of categories){
-      
+    for (const category of categories) {
       const { subCategoryId, mainCategory, subCategoryName } = category;
-      if(subCategoryId){
+      if (subCategoryId) {
         const subCategoryObj = await categoryRepo.findOne({
-          _id: subCategoryId,
+          _id: subCategoryId
         });
-        if(!subCategoryObj){
-          throw new Error(`Category ${subCategoryId} not found`);
+        if (!subCategoryObj) {
+          throw new Error(`Category ${ subCategoryId } not found`);
         }
         toSave.push(subCategoryObj._id);
-      }
-      else{
-        //create new category
+      } else {
+        // create new category
         const newCategory = await categoryRepo.create({
           name: subCategoryName,
-          isMainCategory: false,
+          isMainCategory: false
         });
-        await categoryRepo.update({name: mainCategory}, { $push: { subCategories: newCategory._id } });
+        await categoryRepo.update({ name: mainCategory }, { $push: { subCategories: newCategory._id } });
         toSave.push(newCategory._id);
       }
     }
-    await queryObj.updateOne({categories: toSave});
+    await queryObj.updateOne({ categories: toSave });
     return queryObj;
   }
 
   async updateCategoriesByMinistry() {
-    const queries = await this.find({$or:[{categories:[]},{categories:null}]}, {populate: "replyMinistry"});
-    for(const query of queries){
-      if(!query.replyMinistry){
+    const queries = await this.find({ $or: [ { categories: [] }, { categories: null } ] }, { populate: 'replyMinistry' });
+    for (const query of queries) {
+      if (!query.replyMinistry) {
         continue;
       }
       const ministry = query.replyMinistry as Ministry;
       const categoryByMinistry = ministryRepo.getCategoryByMinistryName(ministry.name);
-      if(categoryByMinistry){
-        await query.updateOne({categories: [ categoryByMinistry ]});
+      if (categoryByMinistry) {
+        await query.updateOne({ categories: [ categoryByMinistry ] });
       }
     }
   }
