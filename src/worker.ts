@@ -17,7 +17,7 @@ const startWorker = async () => {
 
   // Committee
   workerQueue.process('fetchCommitteesFromKnessetApi', committeeWorker.fetchCommitteesFromKnessetApi);
-  workerQueue.process('updateCommitteesMembers', committeeWorker.updateCommitteesMembers);
+  // workerQueue.process('updateCommitteesMembers', committeeWorker.updateCommitteesMembers);
 
   // Query
   workerQueue.process('fetchQueries', queryWorker.fetchQueries);

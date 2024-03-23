@@ -33,7 +33,7 @@ class QueryRepo extends BaseRepo<Query> {
     let queryNumber = 1;
     const queriesToSave = [];
     // queries = queries.splice(0, 3);
-    for await (const query of queries) {
+    for (const query of queries) {
       logger.info({ message: `Mapping query #${ queryNumber } out of ${ queries.length }`, query });
       if (!query.QueryID) {
         query.QueryID = query.Id;
