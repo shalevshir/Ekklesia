@@ -37,11 +37,11 @@ class PersonRepo extends BaseRepo<Person> {
       throw new Error('No People found');
     }
     const arrangedPeople = await this.arrangeMks(people);
-    await this.updateMany(arrangedPeople, { upsert: true } );
+    await this.updateMany(arrangedPeople, { upsert: true });
   }
 
   async arrangeMks(people: any[]) {
-    for await (const person of people) {
+    for (const person of people) {
       logger.info({ message: 'Arranging person', person });
       const committees = new Set();
       person.roles = new Set();
@@ -99,15 +99,16 @@ class PersonRepo extends BaseRepo<Person> {
       gender: mk.GenderDesc === 'זכר' ? 'male' : 'female',
       faction: mk.faction,
       roles: this.mapRoles(mk.roles),
-      committees: mk.committees,
-      minister: mk.minister
+      committees: Array.from(mk.committees),
+      minister: mk.minister ? mk.minister : []
     } as Person));
   }
 
   mapRoles(positions: Set<number>) {
     const roles = [ ...positions ].map((roleId) => ({
       title: mapIdToRole[roleId],
-      isCurrent: true
+      isCurrent: true,
+      roleOriginId: roleId
     }));
     return roles;
   }

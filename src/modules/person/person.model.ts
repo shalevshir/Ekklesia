@@ -14,6 +14,9 @@ class Role {
 
   @prop()
     isCurrent?: boolean;
+
+  @prop()
+    roleOriginId?: number;
 }
 class Committee {
   @prop()
@@ -76,7 +79,7 @@ export class Person {
   @prop({ type: [ Committee ] })
     committees?: Committee[];
 
-  @prop({ type: [ Ministry ] })
+  @prop({ ref: Ministry })
     minister?: Ref<Ministry>[];
 
   @prop()

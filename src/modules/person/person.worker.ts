@@ -12,7 +12,6 @@ class PersonWorker {
       return true;
     } catch (error) {
       logger.error('Error in fetchPeople', error);
-      throw error;
     }
   }
 }
