@@ -8,6 +8,16 @@ class SheetsService {
     this.sheets = google.sheets({ version: 'v4', auth });
   }
 
+  static getAuth(authFile: string) {
+    const auth = new google.auth.GoogleAuth({
+      keyFile: authFile,
+      scopes: [ 'https://www.googleapis.com/auth/spreadsheets' ]
+    });
+
+    return auth.getClient();
+  }
+
+
   async readSheet(sheetId: string, range?: string): Promise<any[]|undefined> {
     try {
       const response = await this.sheets.spreadsheets.values.get({
