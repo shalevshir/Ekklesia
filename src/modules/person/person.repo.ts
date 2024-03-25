@@ -5,6 +5,7 @@ import committeeRepo from '../committee/committee.repo';
 import ministryRepo from '../ministry/ministry.repo';
 import { mapIdToRole } from '../../types/roles.enum';
 import logger from '../../utils/logger';
+import { DocumentType } from '@typegoose/typegoose';
 
 class PersonRepo extends BaseRepo<Person> {
   private _peopleList: Person[] = [];
@@ -117,7 +118,7 @@ class PersonRepo extends BaseRepo<Person> {
     return (await this.peopleList).find((person) => person.originId === originId);
   }
 
-  async getPersonByFullNameHeb(name: string| RegExp) {
+  async getPersonByFullNameHeb(name: string| RegExp): Promise<DocumentType<any>> {
     return (await this.peopleList).find((person) => {
       const personName = `${ person.firstNameHeb } ${ person.lastNameHeb }`;
       // check if regex matches the name
