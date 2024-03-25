@@ -2,6 +2,8 @@ import axios from 'axios';
 import _ from 'lodash';
 import { mapIdToRole } from '../types/roles.enum';
 import logger from './logger';
+import runHistoryRepo from '../modules/runHistory/runHistory.repo';
+import { RunTypes } from '../modules/runHistory/runHistory.model';
 
 function wait(seconds: number) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -33,8 +35,10 @@ class KnessetService {
 
   async getMks(): Promise<any[] | undefined> {
     try {
+      const lastRunDate = await runHistoryRepo.getLatestRunDate(RunTypes.PERSON);
       const { data } = await this.axiosInstance.get(
-        `${ this.baseKnessetUrlV4 }ParliamentInfo/KNS_PersonToPosition?$filter=KnessetNum eq 25&$expand=KNS_Person`
+        `${ this.baseKnessetUrlV4 }ParliamentInfo/KNS_PersonToPosition?` +
+        `$filter=KnessetNum eq 25 and LastUpdatedDate gt ${ lastRunDate }&$expand=KNS_Person`
       );
       if (!data.value) {
         throw new Error('No persons found');
