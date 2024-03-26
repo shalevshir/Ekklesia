@@ -10,6 +10,39 @@ export enum Vote {
   NO_VOTE = 'no-vote',
 }
 
+export enum BillStatusesOrder {
+  onTable = 0,
+  earlyDiscussion = 1,
+  preparationForFirstVote = 2,
+  firstVote = 3,
+  preparationForSecondThirdVote = 4,
+  secondThirdVote = 5,
+  thirdVote = 6,
+  approved = 7,
+  stopped = 99,
+  notInLegislation = 98,
+}
+
+export enum BillStatuses {
+  onTable = 'onTable',
+  earlyDiscussion = 'earlyDiscussion',
+  preparationForFirstVote = 'preparationForFirstVote',
+  firstVote = 'firstVote',
+  preparationForSecondThirdVote = 'preparationForSecondThirdVote',
+  secondThirdVote = 'secondThirdVote',
+  thirdVote = 'thirdVote',
+  approved = 'approved',
+  stopped = 'stopped',
+  notInLegislation = 'notInLegislation',
+}
+
+export enum BillTypes {
+  governmental = 'governmental',
+  private = 'private',
+  committee = 'committee',
+}
+
+
 class VoteSchema {
   @prop({ required: true, ref: Person })
     person!: Ref<Person>;
@@ -67,11 +100,14 @@ export class Bill {
   @prop()
     billLink?: string;
 
-  @prop({ enum: [ 'governmental', 'private', 'committee' ] })
-    type?: string;
+  @prop({ enum: BillTypes })
+    type?: BillTypes;
 
-  @prop()
-    status?: string;
+  @prop({ enum: BillStatuses })
+    status?: BillStatuses;
+
+  @prop({ enum: BillStatusesOrder })
+    statusOrder?: BillStatusesOrder;
 
   @prop()
     date?: Date;
