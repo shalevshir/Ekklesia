@@ -37,8 +37,9 @@ class KnessetService {
     try {
       const lastRunDate = await runHistoryRepo.getLatestRunDate(RunTypes.PERSON);
       const { data } = await this.axiosInstance.get(
-        `${ this.baseKnessetUrlV4 }ParliamentInfo/KNS_PersonToPosition?` +
-        `$filter=KnessetNum eq 25 and LastUpdatedDate gt ${ lastRunDate }&$expand=KNS_Person`
+        `${ this.baseKnessetUrlV4 }ParliamentInfo/KNS_PersonToPosition?$filter=KnessetNum eq 25` +
+        (lastRunDate ? ` and LastUpdatedDate gt ${ lastRunDate }` : '') +
+        '&$expand=KNS_Person'
       );
       if (!data.value) {
         throw new Error('No persons found');
@@ -173,8 +174,11 @@ class KnessetService {
   }
   async getBills() {
     try {
+      const lastRunDate = await runHistoryRepo.getLatestRunDate(RunTypes.BILL);
       const { data } = await this.axiosInstance.get(
-        `${ this.dataBases.parliament }/KNS_Bill?$filter=KnessetNum eq 25&$expand=KNS_BillInitiators`
+        `${ this.dataBases.parliament }/KNS_Bill?$filter=KnessetNum eq 25` +
+        (lastRunDate ? ` and LastUpdatedDate gt datetime'${ lastRunDate }'` : '') +
+        '&$expand=KNS_BillInitiators'
       );
       return this.accumulateData(data);
     } catch (error) {
