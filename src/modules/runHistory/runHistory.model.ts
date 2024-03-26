@@ -15,7 +15,7 @@ export enum RunStatuses {
   PENDING = 'pending',
 }
 
-@modelOptions({ schemaOptions: { timestamps: true } })
+@modelOptions({ schemaOptions: { timestamps: true, versionKey: false } })
 export class RunHistory {
   @prop({ required: true, enum: RunTypes })
     type!: RunTypes;
