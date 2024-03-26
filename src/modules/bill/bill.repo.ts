@@ -1,7 +1,6 @@
 import { DocumentType } from '@typegoose/typegoose';
 import BaseRepo from '../../abstracts/repo.abstract';
-import personRepo from '../person/person.repo';
-import BillModel, { Bill, Vote } from './bill.model';
+import BillModel, { Bill, BillStatuses, BillStatusesOrder, Vote } from './bill.model';
 import knessetApiService from '../../utils/knesset-api.service';
 import committeeRepo from '../committee/committee.repo';
 import _ from 'lodash';
@@ -10,6 +9,8 @@ import PersonModel from '../person/person.model';
 import logger from '../../utils/logger';
 import { getFileAsText } from '../../utils/files.service';
 import embeddingService from '../../utils/embedding.service';
+import { RunHistory, RunStatuses } from '../runHistory/runHistory.model';
+import personRepo from '../person/person.repo';
 
 class BillsRepo extends BaseRepo<Bill> {
   constructor() {
@@ -56,10 +57,71 @@ class BillsRepo extends BaseRepo<Bill> {
     178: 'approvedInCommitteeForSecondAndThirdVote',
     179: 'approvedInCommitteeForSecondAndThirdVote'
   };
-  async fetchBillsFromKnesset() {
+  statusIdToEnumMap: Record<number, BillStatuses> = {
+    // נעצרה
+    177: BillStatuses.stopped,
+    // מוזגה עם הצעת חוק אחרת
+    122: BillStatuses.notInLegislation,
+    // הבקשה לדין רציפות נדחתה במליאה
+    110: BillStatuses.notInLegislation,
+    // הבקשה לדין רציפות נדחתה בוועדה
+    176: BillStatuses.notInLegislation,
+    // לדיון במליאה על החלת דין רציפות
+    120: BillStatuses.notInLegislation,
+    // בדיון בוועדה על החלת דין רציפות
+    175: BillStatuses.notInLegislation,
+    // לאישור מיזוג בוועדת הכנסת
+    169: BillStatuses.notInLegislation,
+    // להסרה מסדר היום לבקשת ועדה
+    140: BillStatuses.notInLegislation,
+    // לאישור פיצול במליאה
+    158: BillStatuses.notInLegislation,
+    // הוסבה להצעה לסדר היום
+    124: BillStatuses.notInLegislation,
+    // הונחה על שולחן הכנסת לדיון מוקדם
+    104: BillStatuses.onTable,
+    // במליאה לדיון מוקדם
+    150: BillStatuses.earlyDiscussion,
+    // בוועדת הכנסת לקביעת הוועדה המטפלת
+    106: BillStatuses.preparationForFirstVote,
+    // הכנה לקריאה ראשוונה
+    108: BillStatuses.preparationForFirstVote,
+    // אושרה בוועדה לקריאה ראשונה
+    109: BillStatuses.preparationForFirstVote,
+    // לדיון במליאה לקראת הקריאה הראשונה
+    111: BillStatuses.preparationForFirstVote,
+    // הונחה על שולחן הכנסת לקריאה ראשונה
+    141: BillStatuses.firstVote,
+    // הכנה לקריאה שנייה ושלישית
+    113: BillStatuses.preparationForSecondThirdVote,
+    // אושרה בוועדה לקריאה שנייה-שלישית
+    178: BillStatuses.preparationForSecondThirdVote,
+    // הונחה על שולחן הכנסת לקריאה שנייה-שלישית
+    130: BillStatuses.preparationForSecondThirdVote,
+    // לדיון במליאה לקראת קריאה שנייה-שלישית
+    114: BillStatuses.secondThirdVote,
+    // הוחזרה לוועדה להכנה לקריאה שלישית
+    115: BillStatuses.thirdVote,
+    // הונחה על שולחן הכנסת לקריאה שלישית
+    131: BillStatuses.thirdVote,
+    // לדיון במליאה לקראת קריאה שלישית
+    117: BillStatuses.thirdVote,
+    // התקבלה בקריאה שלישית
+    118: BillStatuses.approved
+  };
+
+  async fetchBillsFromKnesset(run: DocumentType<RunHistory>) {
     const billsData = await knessetApiService.getBills();
     const arrangedBills = await this.arrangeBills(billsData);
-    await this.updateMany(arrangedBills, { upsert: true });
+    const updatedBills = await this.updateMany(arrangedBills, { upsert: true });
+
+    await run.endRun({
+      status: RunStatuses.SUCCESS,
+      log: {
+        message: `${ arrangedBills.length } bills fetched successfully`,
+        billsIds: updatedBills.map((bill) => ({ _id: bill._id, created: bill.isNew }))
+      }
+    });
   }
 
   async arrangeBills(bills: any[]) {
@@ -69,7 +131,9 @@ class BillsRepo extends BaseRepo<Bill> {
       logger.info(`Arranging bill ${ bill.BillID }`);
       bill.initiator = [];
       const billType: string = this.types[bill.SubTypeID];
-      const billStatus: string = this.statuses[bill.StatusID];
+
+      const billStatus: BillStatuses = this.statusIdToEnumMap[bill.StatusID];
+      const billStatusOrder = BillStatusesOrder[billStatus];
       const committee = await committeeRepo.findOne({
         originId: bill.CommitteeID
       });
@@ -88,6 +152,7 @@ class BillsRepo extends BaseRepo<Bill> {
         summary: bill.SummaryLaw,
         type: billType,
         status: billStatus,
+        statusOrder: billStatusOrder,
         date: bill.LastUpdatedDate,
         number: bill.Number,
         pNumber: bill.PrivateNumber,
