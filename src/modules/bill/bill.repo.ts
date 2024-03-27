@@ -76,6 +76,8 @@ class BillsRepo extends BaseRepo<Bill> {
     140: BillStatuses.notInLegislation,
     // לאישור פיצול במליאה
     158: BillStatuses.notInLegislation,
+    // לאישור פיצול במליאה
+    162: BillStatuses.notInLegislation,
     // הוסבה להצעה לסדר היום
     124: BillStatuses.notInLegislation,
     // הונחה על שולחן הכנסת לדיון מוקדם
@@ -84,8 +86,12 @@ class BillsRepo extends BaseRepo<Bill> {
     150: BillStatuses.earlyDiscussion,
     // בוועדת הכנסת לקביעת הוועדה המטפלת
     106: BillStatuses.preparationForFirstVote,
+    // בוועדת הכנסת לקביעת הוועדה המטפלת
+    142: BillStatuses.preparationForFirstVote,
     // הכנה לקריאה ראשוונה
     108: BillStatuses.preparationForFirstVote,
+    // הכנה לקריאה ראשוונה
+    101: BillStatuses.preparationForFirstVote,
     // אושרה בוועדה לקריאה ראשונה
     109: BillStatuses.preparationForFirstVote,
     // לדיון במליאה לקראת הקריאה הראשונה
