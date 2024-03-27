@@ -48,7 +48,7 @@ class RunHistoryRepo extends BaseRepo<RunHistory> {
 
   async getLatestRunDate(type: RunTypes): Promise<string | null> {
     const lastRun = await RunHistoryModel.findOne(
-      { type, status: { $ne: RunStatuses.PENDING } }, { startTime: 1 }).sort({ startTime: -1 }
+      { type, status: RunStatuses.SUCCESS }, { startTime: 1 }).sort({ startTime: -1 }
     );
     if (!lastRun) {
       return null;
