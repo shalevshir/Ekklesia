@@ -9,7 +9,7 @@ import PersonModel from '../person/person.model';
 import logger from '../../utils/logger';
 import { getFileAsText } from '../../utils/files.service';
 import embeddingService from '../../utils/embedding.service';
-import { RunHistory, RunStatuses } from '../runHistory/runHistory.model';
+import { RunHistory } from '../runHistory/runHistory.model';
 import personRepo from '../person/person.repo';
 
 class BillsRepo extends BaseRepo<Bill> {
@@ -121,13 +121,11 @@ class BillsRepo extends BaseRepo<Bill> {
     const arrangedBills = await this.arrangeBills(billsData);
     const updatedBills = await this.updateMany(arrangedBills, { upsert: true });
 
-    await run.endRun({
-      status: RunStatuses.SUCCESS,
-      log: {
+    await run.success(
+      {
         message: `${ arrangedBills.length } bills fetched successfully`,
         billsIds: updatedBills.map((bill) => ({ _id: bill._id, created: bill.isNew }))
-      }
-    });
+      });
   }
 
   async arrangeBills(bills: any[]) {

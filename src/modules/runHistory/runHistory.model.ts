@@ -1,13 +1,5 @@
 import { prop, getModelForClass, modelOptions, DocumentType } from '@typegoose/typegoose';
-
-export enum RunTypes {
-  PERSON = 'person',
-  COMMITTEE = 'committee',
-  COMMITTEE_SESSION = 'committeeSession',
-  BILL = 'bill',
-  QUERY = 'query',
-  AGENDA = 'agenda',
-}
+import { Entities } from '../../types/entities.enum';
 
 export enum RunStatuses {
   SUCCESS = 'success',
@@ -17,8 +9,8 @@ export enum RunStatuses {
 
 @modelOptions({ schemaOptions: { timestamps: true, versionKey: false } })
 export class RunHistory {
-  @prop({ required: true, enum: RunTypes })
-    type!: RunTypes;
+  @prop({ required: true, enum: Entities })
+    type!: Entities;
 
   @prop({ required: true, enum: RunStatuses })
     status!: RunStatuses;
@@ -39,18 +31,33 @@ export class RunHistory {
     log?: Record<string, any>;
 
 
-  async endRun(
-    this: DocumentType<RunHistory>, data: { status: RunStatuses; log: Record<string, any>; error?: string }
+  async success(
+    this: DocumentType<RunHistory>, log: Record<string, any>
   ) {
     const id = this._id;
     const endDate = new Date();
     const duration = String((endDate.getTime() - this.startTime.getTime()) / 1000);
     const updateData = {
-      ...data,
+      status: RunStatuses.SUCCESS,
+      log,
       endTime: endDate,
       duration
     };
       // update the run history with the end time and duration
+    await RunHistoryModel.findByIdAndUpdate(id, updateData);
+  }
+
+  async fail(this: DocumentType<RunHistory>, error: Error) {
+    const id = this._id;
+    const endDate = new Date();
+    const duration = String((endDate.getTime() - this.startTime.getTime()) / 1000);
+    const updateData = {
+      status: RunStatuses.FAILED,
+      error: error.message,
+      endTime: endDate,
+      duration
+    };
+      // update the run history with the end time, duration, and error message
     await RunHistoryModel.findByIdAndUpdate(id, updateData);
   }
 }

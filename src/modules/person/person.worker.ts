@@ -1,23 +1,23 @@
-import { RunStatuses, RunTypes } from './../runHistory/runHistory.model';
 import { DoneCallback, Job } from 'bull';
 import logger from '../../utils/logger';
 import personRepo from './person.repo';
 import runHistoryRepo from '../runHistory/runHistory.repo';
+import { Entities } from '../../types/entities.enum';
 
 class PersonWorker {
   async fetchPeople(job: Job, done: DoneCallback) {
-    const run = await runHistoryRepo.initiateRunHistory(RunTypes.PERSON);
+    const run = await runHistoryRepo.initiateRunHistory(Entities.PERSON);
     try {
-      logger.info({ message: 'Fetch people process started', jobId: job.id });
+      logger.info({ message: 'Fetch people process started', jobId: job.id, runId: run._id });
       done();
-      const personIds = await personRepo.fetchPeopleFromKnessetApi();
+      const peopleIds = await personRepo.fetchPeopleFromKnessetApi();
       logger.info('Fetching people process finished');
-      await run.endRun({ status: RunStatuses.SUCCESS, log: { message: 'Fetching people process finished', personIds } });
+      await run.success( { message: `Fetched ${ peopleIds.length } people`, peopleIds });
       return true;
     } catch (error) {
       logger.error('Error in fetchPeople', error);
-      run.endRun(
-        { status: RunStatuses.FAILED, log: { message: 'Error in fetchPeople' }, error: (error as Error).message }
+      run.fail(
+        error as Error
       );
     }
   }

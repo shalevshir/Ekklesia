@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { mapIdToRole } from '../types/roles.enum';
 import logger from './logger';
 import runHistoryRepo from '../modules/runHistory/runHistory.repo';
-import { RunTypes } from '../modules/runHistory/runHistory.model';
+import { Entities } from '../types/entities.enum';
 
 function wait(seconds: number) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -35,7 +35,7 @@ class KnessetService {
 
   async getMks(): Promise<any[] | undefined> {
     try {
-      const lastRunDate = await runHistoryRepo.getLatestRunDate(RunTypes.PERSON);
+      const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.PERSON);
       const { data } = await this.axiosInstance.get(
         `${ this.baseKnessetUrlV4 }ParliamentInfo/KNS_PersonToPosition?$filter=KnessetNum eq 25` +
         (lastRunDate ? ` and LastUpdatedDate gt ${ lastRunDate }` : '') +
@@ -71,7 +71,7 @@ class KnessetService {
       data = nextData;
       const toPush = data.value ? data.value : data;
       dataArray.push(...toPush);
-      await wait(1);
+      await wait(0.7);
     }
     return dataArray;
   }
@@ -174,7 +174,7 @@ class KnessetService {
   }
   async getBills() {
     try {
-      const lastRunDate = await runHistoryRepo.getLatestRunDate(RunTypes.BILL);
+      const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.BILL);
       const { data } = await this.axiosInstance.get(
         `${ this.dataBases.parliament }/KNS_Bill?$filter=KnessetNum eq 25` +
         (lastRunDate ? ` and LastUpdatedDate gt datetime'${ lastRunDate }'` : '') +

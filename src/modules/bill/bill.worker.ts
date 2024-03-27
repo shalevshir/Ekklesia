@@ -3,12 +3,12 @@ import logger from '../../utils/logger';
 import committeeRepo from '../committee/committee.repo';
 import billRepo from './bill.repo';
 import runHistoryRepo from '../runHistory/runHistory.repo';
-import { RunStatuses, RunTypes } from '../runHistory/runHistory.model';
+import { Entities } from '../../types/entities.enum';
 
 
 class billWorker {
   async fetchBills(job: Job, done: DoneCallback) {
-    const run = await runHistoryRepo.initiateRunHistory(RunTypes.BILL);
+    const run = await runHistoryRepo.initiateRunHistory(Entities.BILL);
     try {
       logger.info({ message: 'Fetch bills process started', jobId: job.id });
       done();
@@ -17,8 +17,8 @@ class billWorker {
       return true;
     } catch (error) {
       logger.error('Error in fetchBills', error);
-      run.endRun(
-        { status: RunStatuses.FAILED, log: { message: 'Error in fetchBills' }, error: (error as Error).message }
+      run.fail(
+        error as Error
       );
       throw error;
     }

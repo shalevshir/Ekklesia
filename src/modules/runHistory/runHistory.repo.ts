@@ -1,13 +1,14 @@
-import RunHistoryModel, { RunHistory, RunStatuses, RunTypes } from './runHistory.model';
+import RunHistoryModel, { RunHistory, RunStatuses } from './runHistory.model';
 import logger from '../../utils/logger';
 import BaseRepo from '../../abstracts/repo.abstract';
 import { DocumentType } from '@typegoose/typegoose';
+import { Entities } from '../../types/entities.enum';
 
 class RunHistoryRepo extends BaseRepo<RunHistory> {
   constructor() {
     super(RunHistoryModel);
   }
-  async initiateRunHistory(type: RunTypes): Promise<DocumentType<RunHistory>> {
+  async initiateRunHistory(type: Entities): Promise<DocumentType<RunHistory>> {
     try {
       const runHistory = new RunHistoryModel({
         type,
@@ -46,7 +47,7 @@ class RunHistoryRepo extends BaseRepo<RunHistory> {
     }
   }
 
-  async getLatestRunDate(type: RunTypes): Promise<string | null> {
+  async getLatestRunDate(type: Entities): Promise<string | null> {
     const lastRun = await RunHistoryModel.findOne(
       { type, status: RunStatuses.SUCCESS }, { startTime: 1 }).sort({ startTime: -1 }
     );
