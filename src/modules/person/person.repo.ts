@@ -6,7 +6,6 @@ import ministryRepo from '../ministry/ministry.repo';
 import { mapIdToRole } from '../../types/roles.enum';
 import logger from '../../utils/logger';
 import { DocumentType } from '@typegoose/typegoose';
-import { RunHistory, RunStatuses } from '../runHistory/runHistory.model';
 
 class PersonRepo extends BaseRepo<Person> {
   private _peopleList: Person[] = [];
@@ -32,7 +31,7 @@ class PersonRepo extends BaseRepo<Person> {
     return this._peopleList;
   }
 
-  async fetchPeopleFromKnessetApi(run: DocumentType<RunHistory>) {
+  async fetchPeopleFromKnessetApi() {
     const people = await knessetApiService.getMks();
     logger.info(`Found ${ people?.length } People`);
     if (!people) {
@@ -40,10 +39,7 @@ class PersonRepo extends BaseRepo<Person> {
     }
     const arrangedPeople = await this.arrangeMks(people);
     const updated = await this.updateMany(arrangedPeople, { upsert: true });
-    const peopleIds = updated.map((doc) => doc._id);
-    run.endRun(
-      { status: RunStatuses.SUCCESS, log: { message: `${ updated.length } People fetched successfully`, peopleIds } }
-    );
+    return updated.map(this.mapUpsert);
   }
 
   async arrangeMks(people: any[]) {

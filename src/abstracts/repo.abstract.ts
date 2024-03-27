@@ -66,6 +66,14 @@ class BaseRepo <T> {
   async aggregate(pipeline: PipelineStage[]) {
     return await this.model.aggregate(pipeline);
   }
+
+  mapUpsert(doc: FilterQuery<T>) {
+    let created = false;
+    if (doc.createdAt.getTime() === doc.updatedAt.getTime()) {
+      created = true;
+    }
+    return { id: doc._id, created };
+  }
 }
 
 export default BaseRepo;

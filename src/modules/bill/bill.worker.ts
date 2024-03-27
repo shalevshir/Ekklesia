@@ -39,11 +39,10 @@ class billWorker {
         }
         await billRepo.update({ _id: bill._id }, { categories: [ category ] });
       }
-      // await billRepo.updatebillsMainCategory();
       logger.info('Update bills main category process finished');
       return true;
     } catch (error) {
-      logger.error('Error in updatebillsMainCategory', error);
+      logger.error('Error in updateBillsMainCategory', error);
       throw error;
     }
   }

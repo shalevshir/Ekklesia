@@ -10,8 +10,9 @@ class PersonWorker {
     try {
       logger.info({ message: 'Fetch people process started', jobId: job.id });
       done();
-      await personRepo.fetchPeopleFromKnessetApi(run);
+      const personIds = await personRepo.fetchPeopleFromKnessetApi();
       logger.info('Fetching people process finished');
+      await run.endRun({ status: RunStatuses.SUCCESS, log: { message: 'Fetching people process finished', personIds } });
       return true;
     } catch (error) {
       logger.error('Error in fetchPeople', error);

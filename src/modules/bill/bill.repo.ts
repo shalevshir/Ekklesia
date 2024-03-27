@@ -204,7 +204,9 @@ class BillsRepo extends BaseRepo<Bill> {
         logger.info({ message: `updating bill #${ billNumber } out of ${ bills.length }`, billId: bill._id });
         const billData = await rawDataCollection.find({ 'Item ID': +bill.originId }).toArray();
         if (!billData.length) {
-          logger.info({ message: `No stages found for bill #${ billNumber } out of ${ bills.length }`, billId: bill._id });
+          logger.info({
+            message: `No stages found for bill #${ billNumber } out of ${ bills.length }`, billId: bill._id
+          });
           billNumber++;
           continue;
         }
