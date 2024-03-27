@@ -8,8 +8,6 @@ class Agenda extends BaseRepo<Agenda> {
 
   @prop({ required: true })
     name!: string;
-  @prop({ required: true })
-    test!: string;
 }
 
 const AgendaModel = getModelForClass(Agenda);
