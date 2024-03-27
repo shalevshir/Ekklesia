@@ -57,7 +57,6 @@ class VoteSchema {
     sessionId?: string;
 }
 
-@modelOptions({ schemaOptions: { timestamps: true } })
 export class StageSchema {
   @prop({ enum: [ 'first-reading', 'second-reading', 'committee', 'third-reading' ] })
     name?: string;
@@ -75,6 +74,7 @@ export class StageSchema {
     result?: string;
 }
 
+@modelOptions({ schemaOptions: { timestamps: true } })
 export class Bill {
   @prop({ required: true, unique: true, type: Number })
     originId!: number;
