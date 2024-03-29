@@ -6,7 +6,6 @@ import runHistoryRepo from '../runHistory/runHistory.repo';
 import committeeSessionRepo from './committeeSession.repo';
 import queueService from '../../utils/queue.service';
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 class CommitteeSessionWorker {
   async runFetchSessionsTask(job: Job, done: DoneCallback) {
     try {
@@ -16,7 +15,6 @@ class CommitteeSessionWorker {
       for (const committee of committees) {
         logger.info({ message: 'Running fetching committee sessions', committeeId: committee._id });
         queueService.add('updateCommittee', { data: committee });
-        await wait(30 * 1000);
       }
       logger.info('Fetching committees sessions process finished');
       return true;
