@@ -100,8 +100,11 @@ class KnessetService {
 
   async getMainCommittees() {
     try {
+      const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.COMMITTEE);
+      logger.info('Fetching main committees', { lastRunDate });
       const { data } = await this.axiosInstance.get(
-        `${ this.dataBases.parliament }/KNS_Committee()?$filter=KnessetNum eq 25 and ParentCommitteeID eq null`
+        `${ this.dataBases.parliament }/KNS_Committee()?$filter=KnessetNum eq 25 and ParentCommitteeID eq null` +
+        (lastRunDate ? ` and LastUpdatedDate gt datetime'${ lastRunDate }'` : '')
       );
 
       const committees = await this.accumulateData(data);
@@ -115,8 +118,11 @@ class KnessetService {
 
   async getSubCommittees() {
     try {
+      const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.COMMITTEE);
+      logger.info('Fetching sub committees', { lastRunDate });
       const { data } = await this.axiosInstance.get(
-        `${ this.dataBases.parliament }/KNS_Committee()?$filter=KnessetNum eq 25`
+        `${ this.dataBases.parliament }/KNS_Committee()?$filter=KnessetNum eq 25` +
+        (lastRunDate ? ` and LastUpdatedDate gt datetime'${ lastRunDate }'` : '')
       );
 
       const committees = await this.accumulateData(data);

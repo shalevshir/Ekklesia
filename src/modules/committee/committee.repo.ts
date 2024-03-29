@@ -3,6 +3,7 @@ import CommitteeModel, { Committee } from './committee.model';
 import knessetApiService from '../../utils/knesset-api.service';
 import _ from 'lodash';
 import personRepo from '../person/person.repo';
+import logger from '../../utils/logger';
 
 class CommitteeRepo extends BaseRepo<Committee> {
   typeEnum: Record<number, string> = {
@@ -52,22 +53,25 @@ class CommitteeRepo extends BaseRepo<Committee> {
   async fetchCommitteesFromKnessetApi() {
     const mainCommitteesFromApi = await knessetApiService.getMainCommittees();
     const arrangedCommittees = await this.arrangeCommittees(mainCommitteesFromApi);
-    await this.updateMany(arrangedCommittees, { upsert: true });
+    const mainCommitteesData = await this.updateMany(arrangedCommittees, { upsert: true });
 
     const subCommitteesFromApi = await knessetApiService.getSubCommittees();
     const arrangedSubCommittees = await this.arrangeCommittees(subCommitteesFromApi);
-    await this.updateMany(arrangedSubCommittees, { upsert: true });
+    const subCommitteesData = await this.updateMany(arrangedSubCommittees, { upsert: true });
+    const data = [ ...mainCommitteesData, ...subCommitteesData ];
+    return data.map(this.mapUpsert);
   }
 
   async arrangeCommittees(committees: any[]) {
     for await (const committee of committees) {
+      logger.info('Arranging Committee: ', committee.Name);
       if (committee.ParentCommitteeID) {
         const parentCommittee = await this.findOne({
           originId: committee.ParentCommitteeID
         });
         _.set(committee, 'parentCommittee', parentCommittee?._id);
       }
-      const headOfCommittee = await personRepo.findOne({
+      const headOfCommittee = await personRepo.find({
         'committees': {
           '$elemMatch': {
             'name': committee.Name,
@@ -75,7 +79,7 @@ class CommitteeRepo extends BaseRepo<Committee> {
           }
         }
       });
-      committee.headOfCommittee = headOfCommittee?._id;
+      _.set(committee, 'headOfCommittee', headOfCommittee.map((head: any) => head._id));
 
       const committeeMembers = await personRepo.find({
         'committees': {

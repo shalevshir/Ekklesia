@@ -40,7 +40,7 @@ export class Committee {
     parentCommittee?: Ref<Committee>;
 
   @prop({ ref: 'Person' })
-    headOfCommittee?: Ref<Person>;
+    headOfCommittee?: Ref<Person>[];
 
   @prop({ ref: 'Person' })
     members?: Ref<Person>[];
