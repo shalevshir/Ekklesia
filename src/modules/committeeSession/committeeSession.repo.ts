@@ -6,6 +6,7 @@ import { getFileAsText } from '../../utils/files.service';
 import personRepo from '../person/person.repo';
 import { Committee } from '../committee/committee.model';
 import logger from '../../utils/logger';
+import _ from 'lodash';
 
 class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
   constructor() {
@@ -23,11 +24,12 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
       committeesSessions
     );
 
-    const res = await this.updateMany(arrangedCommitteesSessions, { upsert: true });
-    const sessionIds = res.map((session) => session._id);
-    logger.info(`Updated ${ sessionIds.length } sessions`);
-    logger.info('Updating committee with sessions');
+    const data = await this.updateMany(arrangedCommitteesSessions, { upsert: true });
+    const sessionsData = data.map(this.mapUpsert);
+    logger.info(`Updated ${ sessionsData.length } sessions`);
+    const sessionIds = _.chain(sessionsData).filter((session) => session.created).map((session) => session.id).value();
     committee.sessions = sessionIds;
+    logger.info('Updating committee with sessions', { sessionIds });
     await committee.save();
   }
 
@@ -35,22 +37,24 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
     committee: DocumentType<Committee>, committeesSessions: any[]
   ): Promise<CommitteeSession[]> {
     const sessionsToSave: CommitteeSession[] = [];
-    const allMissingAttendees: any[] = [];
+    // const allMissingAttendees: any[] = [];
     for (const session of committeesSessions) {
       const mappedSession: Partial<CommitteeSession> = {};
       const transcript = await this.getTranscriptUrl(session.CommitteeSessionID);
       mappedSession.transcriptUrl = transcript;
-      const attendees = await this.getAttendees(session.CommitteeSessionID) as any;
-      if (attendees.attendees?.length) {
-        mappedSession.attendees = attendees.attendees;
-      }
-      if (attendees.missingAttendees?.length) {
-        logger.error('missingAttendees', { missing: attendees.missingAttendees, sessionId: session.CommitteeSessionID });
-        allMissingAttendees.push(...attendees.missingAttendees.map((attendee: any) => ({
-          ...attendee,
-          session: session.CommitteeSessionID
-        })));
-      }
+
+      // const attendees = await this.getAttendees(session.CommitteeSessionID) as any;
+      // if (attendees.attendees?.length) {
+      //   mappedSession.attendees = attendees.attendees;
+      // }
+      // if (attendees.missingAttendees?.length) {
+      //   logger.error('missingAttendees', { missing: attendees.missingAttendees, sessionId: session.CommitteeSessionID });
+      //   allMissingAttendees.push(...attendees.missingAttendees.map((attendee: any) => ({
+      //     ...attendee,
+      //     session: session.CommitteeSessionID
+      //   })));
+      // }
+
       mappedSession.committee = committee._id;
       mappedSession.originId = session.CommitteeSessionID;
       mappedSession.date = session.StartDate;
@@ -59,9 +63,10 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
       mappedSession.broadcastUrl = session.BroadcastUrl;
       mappedSession.status = session.StatusDesc;
       mappedSession.sessionNumber = session.Number;
+
       sessionsToSave.push(mappedSession as CommitteeSession);
     }
-    logger.info('missingAttendees', { missing: allMissingAttendees });
+    // logger.info('missingAttendees', { missing: allMissingAttendees });
     return sessionsToSave;
   }
 

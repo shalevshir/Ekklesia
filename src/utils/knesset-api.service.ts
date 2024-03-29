@@ -129,8 +129,11 @@ class KnessetService {
 
   async getCommitteeSessions(committeeId: number) {
     try {
+      const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.COMMITTEE_SESSION);
+      logger.info('Fetching sessions for committee: ', { committeeId, lastRunDate });
       const { data } = await this.axiosInstance.get(
-        `${ this.dataBases.parliament }/KNS_Committee(${ committeeId })/KNS_CommitteeSessions`
+        `${ this.dataBases.parliament }/KNS_Committee(${ committeeId })/KNS_CommitteeSessions` +
+        `${ lastRunDate ? `?$filter=LastUpdatedDate gt datetime'${ lastRunDate }'` : '' }`
       );
       return this.accumulateData(data);
     } catch (error) {
