@@ -12,8 +12,9 @@ class billWorker {
     try {
       logger.info({ message: 'Fetch bills process started', jobId: job.id });
       done();
-      await billRepo.fetchBillsFromKnesset(run);
+      const data = await billRepo.fetchBillsFromKnesset();
       logger.info('Fetching bills process finished');
+      await run.success({ message: 'Fetch bills process finished', data });
       return true;
     } catch (error) {
       logger.error('Error in fetchBills', error);

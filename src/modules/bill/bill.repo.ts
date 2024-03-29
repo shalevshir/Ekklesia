@@ -9,7 +9,6 @@ import PersonModel from '../person/person.model';
 import logger from '../../utils/logger';
 import { getFileAsText } from '../../utils/files.service';
 import embeddingService from '../../utils/embedding.service';
-import { RunHistory } from '../runHistory/runHistory.model';
 import personRepo from '../person/person.repo';
 
 class BillsRepo extends BaseRepo<Bill> {
@@ -116,16 +115,11 @@ class BillsRepo extends BaseRepo<Bill> {
     118: BillStatuses.approved
   };
 
-  async fetchBillsFromKnesset(run: DocumentType<RunHistory>) {
+  async fetchBillsFromKnesset() {
     const billsData = await knessetApiService.getBills();
     const arrangedBills = await this.arrangeBills(billsData);
     const updatedBills = await this.updateMany(arrangedBills, { upsert: true });
-
-    await run.success(
-      {
-        message: `${ arrangedBills.length } bills fetched successfully`,
-        billsIds: updatedBills.map((bill) => ({ _id: bill._id, created: bill.isNew }))
-      });
+    return updatedBills.map(this.mapUpsert);
   }
 
   async arrangeBills(bills: any[]) {
