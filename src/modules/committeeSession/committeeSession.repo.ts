@@ -7,17 +7,25 @@ import personRepo from '../person/person.repo';
 import { Committee } from '../committee/committee.model';
 import logger from '../../utils/logger';
 import _ from 'lodash';
+import { Person } from '../person/person.model';
+import committeeRepo from '../committee/committee.repo';
+import { RunHistory } from '../runHistory/runHistory.model';
 
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
   constructor() {
     super(CommitteeSessionModel);
   }
 
-  async fetchCommitteesSessions(committee: DocumentType<Committee>) {
-    logger.info('Fetching sessions for committee: ' + committee._id);
+  async fetchCommitteesSessions(committee: DocumentType<Committee>, run: DocumentType<RunHistory>) {
     const committeesSessions = await knessetApiService.getCommitteeSessions(
-      committee.originId
+      committee.originId,
+      run?.entityId
     );
+    if (!committeesSessions || !committeesSessions.length) {
+      logger.info('No sessions found for committee', { committeeId: committee._id });
+      return [];
+    }
     logger.info( `Fetched ${ committeesSessions.length } sessions` );
     const arrangedCommitteesSessions = await this.arrangeCommitteesSessions(
       committee,
@@ -27,33 +35,51 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
     const data = await this.updateMany(arrangedCommitteesSessions, { upsert: true });
     const sessionsData = data.map(this.mapUpsert);
     logger.info(`Updated ${ sessionsData.length } sessions`);
-    const sessionIds = _.chain(sessionsData).filter((session) => session.created).map((session) => session.id).value();
-    committee.sessions = sessionIds;
-    logger.info('Updating committee with sessions', { sessionIds });
-    await committee.save();
+    const sessionIds = _.chain(sessionsData).
+      filter((session) => session.created).map((session) => session.id).value();
+      // logger.info('Updating committee with sessions', { sessionIds });
+    await committeeRepo.findAndUpdate({ _id: committee._id }, { sessions: sessionIds });
+    logger.info({ message: 'Fetched sessions for committee', committeeId: committee._id });
+    return sessionsData || [];
   }
 
   async arrangeCommitteesSessions(
     committee: DocumentType<Committee>, committeesSessions: any[]
   ): Promise<CommitteeSession[]> {
+    const peopleList = await personRepo.peopleList as DocumentType<Person>[];
     const sessionsToSave: CommitteeSession[] = [];
     // const allMissingAttendees: any[] = [];
+    let sessionNumber = 1;
     for (const session of committeesSessions) {
+      logger.info(`Arranging session #${ sessionNumber++ } out of ${ committeesSessions.length }`,
+        { sessionOriginId: session.CommitteeSessionID }
+      );
       const mappedSession: Partial<CommitteeSession> = {};
       const transcript = await this.getTranscriptUrl(session.CommitteeSessionID);
-      mappedSession.transcriptUrl = transcript;
+      if (transcript) {
+        mappedSession.transcriptUrl = transcript;
 
-      // const attendees = await this.getAttendees(session.CommitteeSessionID) as any;
-      // if (attendees.attendees?.length) {
-      //   mappedSession.attendees = attendees.attendees;
-      // }
-      // if (attendees.missingAttendees?.length) {
-      //   logger.error('missingAttendees', { missing: attendees.missingAttendees, sessionId: session.CommitteeSessionID });
-      //   allMissingAttendees.push(...attendees.missingAttendees.map((attendee: any) => ({
-      //     ...attendee,
-      //     session: session.CommitteeSessionID
-      //   })));
-      // }
+        const attendees = await this.getAttendees(transcript) as any;
+        if (attendees?.attendees?.size) {
+          mappedSession.attendees = Array.from(attendees.attendees).map((attendee: any) => {
+            const person = peopleList.find((person) => person._id === attendee.person);
+            if (!person?.committees) {
+              return attendee;
+            }
+            const committeeReference = Array.from(person.committees).
+              find((c) => c.committeeId?.toString() === committee._id?.toString());
+            if (committeeReference) {
+              attendee.role = committeeReference.isChairman ? AttendeeRole.Chairman : AttendeeRole.Member;
+            } else {
+              attendee.role = AttendeeRole.Guest;
+            }
+            return attendee;
+          });
+        }
+        if (attendees.missingAttendees?.length) {
+          mappedSession.missingAttendees = attendees.missingAttendees;
+        }
+      }
 
       mappedSession.committee = committee._id;
       mappedSession.originId = session.CommitteeSessionID;
@@ -65,111 +91,82 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
       mappedSession.sessionNumber = session.Number;
 
       sessionsToSave.push(mappedSession as CommitteeSession);
+      await wait(1000);
     }
     // logger.info('missingAttendees', { missing: allMissingAttendees });
     return sessionsToSave;
   }
 
-  async getTranscriptUrl(committeeSessionId: number) {
+  async getTranscriptUrl(committeeSessionId: number): Promise<string|null> {
     if (!committeeSessionId) {
-      console.log('committeeSession not found', committeeSessionId);
+      logger.log('committeeSession not found', committeeSessionId);
       throw new Error('committeeSession not found');
     }
     const committeeTranscript =
       await knessetApiService.getCommitteeSessionTranscript(
         committeeSessionId
       );
-    return committeeTranscript?.length ? committeeTranscript[0].FilePath : '';
+    return committeeTranscript?.length ? committeeTranscript[0].FilePath : null;
   }
 
-  getAttendees = async (committeeSessionId: number) => {
-    const transcriptObj = await knessetApiService.getCommitteeSessionTranscript(
-      committeeSessionId
-    );
-    if (!transcriptObj?.length) {
-      logger.error('transcript not found', committeeSessionId);
+  getAttendees = async (transcriptUrl: string) => {
+    const transcriptText = await getFileAsText(transcriptUrl) as string;
+    if (!transcriptText) {
       return [];
     }
-    const transcriptText = await getFileAsText(transcriptObj[0].FilePath) as string;
     const attendees = await this.parseTranscript(transcriptText);
     return attendees;
   };
 
   parseTranscript = async (transcript: string): Promise<{
-    attendees: Attendee[];
-    missingAttendees: (Attendee | {
-        person: string;
-        role: AttendeeRole;
-    })[];
+    attendees: Set<Attendee>;
+    missingAttendees: (Attendee | string)[];
 }> => {
-    const attendees: Attendee[] = [];
+    const attendees: Set<Attendee> = new Set();
     const missingAttendees: any[] = [];
 
     const text = transcript.split('נכחו')[1]?.split('מוזמנים')[0];
-    const membersText = text.split('חברי הוועדה:')[1]?.split('חברי הכנסת')[0];
-    const guestsMksText = text.split('חברי הכנסת:')[1]?.split('מוזמנים')[0];
+    const attendeesText = text?.split('חברי הוועדה:')[1]?.split('מוזמנים')[0];
 
-    const membersLines = membersText?.split('\n\n');
+    const attendeesLines = attendeesText?.split('\n\n');
 
-    for (const line of membersLines || []) {
-      if (line.includes('משתתפים') || line.includes('חבר הכנסת')) {
+    for (const line of attendeesLines || []) {
+      if (line.includes('<< ') || line.includes('>> ') || line.includes('ייעוץ משפטי')) {
         break;
       }
-      const role = line.includes('יו"ר') || line.includes('יושב-ראש') ? AttendeeRole.Chairman : AttendeeRole.Member;
-      const attendee = await this.extractAttendeesFromLine(line, role);
+      if (line.includes('חברי הכנסת:')) {
+        continue;
+      }
+      const attendee = await this.extractAttendeesFromLine(line);
       if (!attendee) {
         continue;
       }
-      if (typeof attendee.person === 'string') {
+      if (!(attendee instanceof Attendee)) {
         missingAttendees.push(attendee);
         continue;
       }
-      attendees.push(attendee as Attendee);
-    }
-    const guestsMksLines = guestsMksText?.split('\n\n');
-    for (const line of guestsMksLines || []) {
-      const attendee = await this.extractAttendeesFromLine(line, AttendeeRole.Guest);
-      if (!attendee) {
-        continue;
-      }
-      if (typeof attendee.person === 'string') {
-        missingAttendees.push(attendee);
-        continue;
-      }
-      attendees.push(attendee as Attendee);
+      attendees.add(attendee as Attendee);
     }
 
     return { attendees, missingAttendees };
   };
 
-  extractAttendeesFromLine = async (line: string, role: AttendeeRole) => {
+  extractAttendeesFromLine = async (line: string) => {
     const words = line.split(' ');
     const noWords = words.length < 1;
     const isEmpty = words.every((word) => word === '');
     if (isEmpty || noWords) {
       return;
     }
-    const firstName = words[0];
-    const lastName = words[1];
-    // if ( words[2] && !words[2].includes('–') && !words[2].includes('-')) {
-    //   lastName += '.*' + words[2];
-    // }
 
-    const name = new RegExp(`^.*${ firstName }.*${ lastName }.*$`);
-    // find in virtual name field
-    const person = await personRepo.getPersonByFullNameHeb(name) as DocumentType<any>;
+    const person = await personRepo.getPersonFromText(line) as DocumentType<any>;
 
     if (!person) {
-      logger.error('person not found', name);
-      return {
-        person: `${ firstName } ${ lastName }`,
-        role
-      };
+      return line;
     }
 
     const attendee = new Attendee();
     attendee.person = person._id;
-    attendee.role = role;
     return attendee;
   };
 }

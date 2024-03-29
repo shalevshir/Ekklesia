@@ -64,6 +64,9 @@ export class CommitteeSession {
 
   @prop({ ref: Category })
     categories?: Ref<Category>[];
+
+  @prop({ type: [ String ] })
+    missingAttendees?: string[];
 }
 
 const CommitteeSessionModel = getModelForClass(CommitteeSession);
