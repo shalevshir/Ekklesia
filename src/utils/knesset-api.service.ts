@@ -161,14 +161,13 @@ class KnessetService {
   }
 
   async getQueries() {
-    try {
-      const { data } = await this.axiosInstanceV4.get(
-        `${ this.databaseV4.parliament }/KNS_Query?$filter=KnessetNum eq 25&$expand=KNS_GovMinistry`
-      );
-      return data.value;
-    } catch (error) {
-      console.log(error);
-    }
+    const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.QUERY);
+    logger.info('Fetching queries', { lastRunDate });
+    const { data } = await this.axiosInstanceV4.get(
+      `${ this.databaseV4.parliament }/KNS_Query?$expand=KNS_GovMinistry&$filter=KnessetNum eq 25` +
+        (lastRunDate ? ` and LastUpdatedDate gt ${ lastRunDate }` : '')
+    );
+    return data.value;
   }
 
   async getQueriesDocuments(queryId: number) {

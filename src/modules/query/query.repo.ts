@@ -22,11 +22,11 @@ class QueryRepo extends BaseRepo<Query> {
     super(QueryModel);
   }
   async fetchQueriesFromKnesset() {
-    logger.info('Fetching queries from knesset');
     const queriesData = await knessetApiService.getQueries();
     logger.info({ message: `fetched ${ queriesData.length } queries from knesset` });
     const arrangedQueries = await this.arrangeQueries(queriesData);
-    await this.updateMany(arrangedQueries, { upsert: true });
+    const data = await this.updateMany(arrangedQueries, { upsert: true });
+    return data.map(this.mapUpsert);
   }
 
   async arrangeQueries(queries: any[]): Promise<Query[]> {
@@ -34,7 +34,7 @@ class QueryRepo extends BaseRepo<Query> {
     const queriesToSave = [];
     // queries = queries.splice(0, 3);
     for (const query of queries) {
-      logger.info({ message: `Mapping query #${ queryNumber } out of ${ queries.length }`, query });
+      logger.info({ message: `Mapping query #${ queryNumber } out of ${ queries.length }`, queryOriginId: query.QueryID });
       if (!query.QueryID) {
         query.QueryID = query.Id;
       }
