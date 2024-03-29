@@ -1,5 +1,5 @@
 import csv from 'csv-parser';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import fs from 'fs';
 import path from 'path';
 import logger from './logger';
@@ -19,24 +19,19 @@ async function getFileAsHtml(url: string): Promise<string> {
 }
 
 async function getFileAsText(url: string): Promise<string | undefined> {
-  try {
-    const response = await downloadAndSaveFile(url);
-    let data;
-    if (response.endsWith('.docx') || response.endsWith('.doc')) {
-      data = await extractTextFromDocx(response);
-    } else if (response.endsWith('.pdf')) {
-      data = await extractTextFromPdf(response);
-    }
-    fs.unlink(response, (err) => {
-      if (err) {
-        logger.error('Error deleting file:', err);
-      }
-    });
-    return data;
-  } catch (error) {
-    logger.error('Error getting file as text:', error);
-    return '';
+  const response = await downloadAndSaveFile(url);
+  let data;
+  if (response.endsWith('.docx') || response.endsWith('.doc')) {
+    data = await extractTextFromDocx(response);
+  } else if (response.endsWith('.pdf')) {
+    data = await extractTextFromPdf(response);
   }
+  fs.unlink(response, (err) => {
+    if (err) {
+      logger.error('Error deleting file:', err);
+    }
+  });
+  return data;
 }
 
 async function extractTextFromDocx(filePath: string): Promise<string> {
@@ -65,8 +60,13 @@ async function downloadAndSaveFile(url: string): Promise<string> {
       writer.on('error', reject);
     });
   } catch (error) {
-    logger.error('Error downloading file:', error);
-    throw error;
+    if (error instanceof AxiosError && error?.response?.status === 503) {
+      logger.error('UnavailableError', { url });
+      throw new Error('Unavailable Link');
+    } else {
+      logger.error('Error downloading file:', error);
+      throw error;
+    }
   }
 }
 
