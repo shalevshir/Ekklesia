@@ -44,7 +44,7 @@ class PersonRepo extends BaseRepo<Person> {
 
   async arrangeMks(people: any[]) {
     for (const person of people) {
-      logger.info({ message: 'Arranging person', person });
+      logger.info({ message: 'Arranging person', personOriginId: person.Id });
       const committees = new Set();
       person.roles = new Set();
       for (const position of person.positions) {

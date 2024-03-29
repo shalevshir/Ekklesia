@@ -17,7 +17,10 @@ class BaseRepo <T> {
     return await this.model.insertMany(data);
   }
 
-  async find(query: FilterQuery<T>, options: { populate?: any } = {}): Promise<Array<DocumentType<T & { populate?: any }>>> {
+  async find(
+    query: FilterQuery<T>,
+    options: { populate?: any } = {}
+  ): Promise<Array<DocumentType<T & { populate?: any }>>> {
     return await this.model.find(query, null, { populate: options.populate });
   }
 
