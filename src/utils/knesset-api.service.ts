@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongoose';
 import axios from 'axios';
 import _ from 'lodash';
 import logger from './logger';
@@ -100,12 +101,12 @@ class KnessetService {
     return committees;
   }
 
-  async getCommitteeSessions(committeeId: number) {
-    const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.COMMITTEE_SESSION);
+  async getCommitteeSessions(committeeId: number, entityId?: ObjectId) {
+    const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.COMMITTEE_SESSION, entityId);
     logger.info('Fetching sessions for committee: ', { committeeId, lastRunDate });
     const { data } = await this.axiosInstance.get(
       `${ this.dataBases.parliament }/KNS_Committee(${ committeeId })/KNS_CommitteeSessions` +
-        `${ lastRunDate ? `?$filter=LastUpdatedDate gt datetime'${ lastRunDate }'` : '' }`
+          `${ lastRunDate ? `?$filter=LastUpdatedDate gt datetime'${ lastRunDate }'` : '' }`
     );
     return this.accumulateData(data);
   }
