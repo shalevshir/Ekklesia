@@ -1,5 +1,6 @@
 import { prop, getModelForClass, modelOptions, DocumentType } from '@typegoose/typegoose';
 import { Entities } from '../../types/entities.enum';
+import { ObjectId } from 'mongoose';
 
 export enum RunStatuses {
   SUCCESS = 'success',
@@ -30,6 +31,8 @@ export class RunHistory {
   @prop()
     log?: Record<string, any>;
 
+  @prop()
+    entityId?: ObjectId;
 
   async success(
     this: DocumentType<RunHistory>, log: Record<string, any>

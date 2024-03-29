@@ -3,17 +3,19 @@ import logger from '../../utils/logger';
 import BaseRepo from '../../abstracts/repo.abstract';
 import { DocumentType } from '@typegoose/typegoose';
 import { Entities } from '../../types/entities.enum';
+import { ObjectId } from 'mongoose';
 
 class RunHistoryRepo extends BaseRepo<RunHistory> {
   constructor() {
     super(RunHistoryModel);
   }
-  async initiateRunHistory(type: Entities): Promise<DocumentType<RunHistory>> {
+  async initiateRunHistory(type: Entities, entityId?: ObjectId): Promise<DocumentType<RunHistory>> {
     try {
       const runHistory = new RunHistoryModel({
         type,
         status: RunStatuses.PENDING,
-        startTime: new Date()
+        startTime: new Date(),
+        entityId
       });
 
       const run = await runHistory.save();
@@ -47,9 +49,9 @@ class RunHistoryRepo extends BaseRepo<RunHistory> {
     }
   }
 
-  async getLatestRunDate(type: Entities): Promise<string | null> {
+  async getLatestRunDate(type: Entities, entityId?: ObjectId): Promise<string | null> {
     const lastRun = await RunHistoryModel.findOne(
-      { type, status: RunStatuses.SUCCESS }, { startTime: 1 }).sort({ startTime: -1 }
+      { type, status: RunStatuses.SUCCESS, entityId }, { startTime: 1 }).sort({ startTime: -1 }
     );
     if (!lastRun) {
       return null;
