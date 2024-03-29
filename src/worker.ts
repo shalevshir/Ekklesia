@@ -21,7 +21,6 @@ const startWorker = async () => {
 
   // Query
   workerQueue.process('fetchQueries', queryWorker.fetchQueries);
-  workerQueue.process('updateCategoriesByMinistry', queryWorker.updateCategoriesByMinistry);
 
   // Bill
   workerQueue.process('fetchBills', billWorker.fetchBills);

@@ -21,18 +21,6 @@ class queriesWorker {
       throw error;
     }
   }
-
-  async updateCategoriesByMinistry(job: any) {
-    try {
-      logger.info({ message: 'Update categories by ministry process started', jobId: job.id });
-      await queryRepo.updateCategoriesByMinistry();
-      logger.info('Update categories by ministry process finished');
-      return true;
-    } catch (error) {
-      logger.error('Error in update categories by ministry', error);
-      throw error;
-    }
-  };
 }
 
 export default new queriesWorker();

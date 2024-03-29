@@ -5,7 +5,6 @@ import personRepo from '../person/person.repo';
 import ministryRepo from '../ministry/ministry.repo';
 import categoryRepo from '../category/category.repo';
 import logger from '../../utils/logger';
-import { Ministry } from '../ministry/ministry.model';
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 class QueryRepo extends BaseRepo<Query> {
@@ -122,20 +121,6 @@ class QueryRepo extends BaseRepo<Query> {
     }
     await queryObj.updateOne({ categories: toSave });
     return queryObj;
-  }
-
-  async updateCategoriesByMinistry() {
-    const queries = await this.find({ $or: [ { categories: [] }, { categories: null } ] }, { populate: 'replyMinistry' });
-    for (const query of queries) {
-      if (!query.replyMinistry) {
-        continue;
-      }
-      const ministry = query.replyMinistry as Ministry;
-      const categoryByMinistry = ministryRepo.getCategoryByMinistryName(ministry.name);
-      if (categoryByMinistry) {
-        await query.updateOne({ categories: [ categoryByMinistry ] });
-      }
-    }
   }
 }
 
