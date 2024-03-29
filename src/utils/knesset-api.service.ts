@@ -1,6 +1,5 @@
 import axios from 'axios';
 import _ from 'lodash';
-import { mapIdToRole } from '../types/roles.enum';
 import logger from './logger';
 import runHistoryRepo from '../modules/runHistory/runHistory.repo';
 import { Entities } from '../types/entities.enum';
@@ -34,130 +33,90 @@ class KnessetService {
   });
 
   async getMks(): Promise<any[] | undefined> {
-    try {
-      const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.PERSON);
-      const { data } = await this.axiosInstance.get(
-        `${ this.baseKnessetUrlV4 }ParliamentInfo/KNS_PersonToPosition?$filter=KnessetNum eq 25` +
+    const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.PERSON);
+    const { data } = await this.axiosInstance.get(
+      `${ this.baseKnessetUrlV4 }ParliamentInfo/KNS_PersonToPosition?$filter=KnessetNum eq 25` +
         (lastRunDate ? ` and LastUpdatedDate gt ${ lastRunDate }` : '') +
         '&$expand=KNS_Person'
-      );
-      if (!data.value) {
-        throw new Error('No persons found');
-      }
-      const persons = new Set();
-      for (const position of data.value) {
-        const personObj = position.KNS_Person;
-        // find person on the set
-        const existPerson = Array.from(persons).find((person: any) => person.Id === personObj.Id) as any;
-        if (existPerson) {
-          existPerson.positions.push(position);
-        } else {
-          personObj.positions = [ position ];
-          persons.add(personObj);
-        }
-      }
-      return Array.from(persons);
-    } catch (error) {
-      throw error;
+    );
+    if (!data.value) {
+      throw new Error('No persons found');
     }
+    const persons = new Set();
+    for (const position of data.value) {
+      const personObj = position.KNS_Person;
+      // find person on the set
+      const existPerson = Array.from(persons).find((person: any) => person.Id === personObj.Id) as any;
+      if (existPerson) {
+        existPerson.positions.push(position);
+      } else {
+        personObj.positions = [ position ];
+        persons.add(personObj);
+      }
+    }
+    return Array.from(persons);
   }
 
   async accumulateData(data: any) {
     const dataArray = data.value ? data.value : data;
     while (data['odata.nextLink']) {
+      // eslint-disable-next-line no-await-in-loop
       const { data: nextData } = await this.axiosInstance.get(
         `${ this.dataBases.parliament }/${ data['odata.nextLink'] }`
       );
       data = nextData;
       const toPush = data.value ? data.value : data;
       dataArray.push(...toPush);
+      // eslint-disable-next-line no-await-in-loop
       await wait(0.7);
     }
     return dataArray;
   }
 
-  mapMKs(mksArray: any[]) {
-    return mksArray.map((mk) => ({
-      originId: mk.PersonID,
-      firstNameHeb: mk.FirstName,
-      lastNameHeb: mk.LastName,
-      email: mk.Email,
-      gender: mk.GenderDesc === 'זכר' ? 'male' : 'female',
-      faction: mk.faction,
-      roles: this.mapRoles(mk.roles),
-      committees: mk.committees,
-      minister: mk.minister
-    }));
-  }
-
-  mapRoles(knsPositions: any) {
-    const roles = [ ...knsPositions ].map((roleId) => ({
-      title: mapIdToRole[roleId],
-      isCurrent: true
-    }));
-    return roles;
-  }
-
   async getMainCommittees() {
-    try {
-      const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.COMMITTEE);
-      logger.info('Fetching main committees', { lastRunDate });
-      const { data } = await this.axiosInstance.get(
-        `${ this.dataBases.parliament }/KNS_Committee()?$filter=KnessetNum eq 25 and ParentCommitteeID eq null` +
+    const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.COMMITTEE);
+    logger.info('Fetching main committees', { lastRunDate });
+    const { data } = await this.axiosInstance.get(
+      `${ this.dataBases.parliament }/KNS_Committee()?$filter=KnessetNum eq 25 and ParentCommitteeID eq null` +
         (lastRunDate ? ` and LastUpdatedDate gt datetime'${ lastRunDate }'` : '')
-      );
+    );
 
-      const committees = await this.accumulateData(data);
+    const committees = await this.accumulateData(data);
 
-      return committees;
-    } catch (error) {
-      console.log(error);
-    }
+    return committees;
   }
 
 
   async getSubCommittees() {
-    try {
-      const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.COMMITTEE);
-      logger.info('Fetching sub committees', { lastRunDate });
-      const { data } = await this.axiosInstance.get(
-        `${ this.dataBases.parliament }/KNS_Committee()?$filter=KnessetNum eq 25` +
+    const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.COMMITTEE);
+    logger.info('Fetching sub committees', { lastRunDate });
+    const { data } = await this.axiosInstance.get(
+      `${ this.dataBases.parliament }/KNS_Committee()?$filter=KnessetNum eq 25` +
         (lastRunDate ? ` and LastUpdatedDate gt datetime'${ lastRunDate }'` : '')
-      );
+    );
 
-      const committees = await this.accumulateData(data);
+    const committees = await this.accumulateData(data);
 
-      return committees;
-    } catch (error) {
-      console.log(error);
-    }
+    return committees;
   }
 
   async getCommitteeSessions(committeeId: number) {
-    try {
-      const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.COMMITTEE_SESSION);
-      logger.info('Fetching sessions for committee: ', { committeeId, lastRunDate });
-      const { data } = await this.axiosInstance.get(
-        `${ this.dataBases.parliament }/KNS_Committee(${ committeeId })/KNS_CommitteeSessions` +
+    const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.COMMITTEE_SESSION);
+    logger.info('Fetching sessions for committee: ', { committeeId, lastRunDate });
+    const { data } = await this.axiosInstance.get(
+      `${ this.dataBases.parliament }/KNS_Committee(${ committeeId })/KNS_CommitteeSessions` +
         `${ lastRunDate ? `?$filter=LastUpdatedDate gt datetime'${ lastRunDate }'` : '' }`
-      );
-      return this.accumulateData(data);
-    } catch (error) {
-      console.log(error);
-    }
+    );
+    return this.accumulateData(data);
   }
 
   async getCommitteeSessionTranscript(committeeSessionId: number) {
     const url = `${ this.dataBases.parliament }` +
       `/KNS_CommitteeSession(${ committeeSessionId })/KNS_DocumentCommitteeSessions/?$filter=GroupTypeID eq 23`;
-    try {
-      const { data } = await this.axiosInstance.get(
-        url
-      );
-      return data.value;
-    } catch (error) {
-      console.log(error);
-    }
+    const { data } = await this.axiosInstance.get(
+      url
+    );
+    return data.value;
   }
 
   async getQueries() {
@@ -171,60 +130,47 @@ class KnessetService {
   }
 
   async getQueriesDocuments(queryId: number) {
-    try {
-      const { data } = await this.axiosInstanceV4.get(
-        `${ this.databaseV4.parliament }/KNS_DocumentQuery?$filter=QueryID eq ${ queryId }`
-      );
-      return this.accumulateData(data);
-    } catch (error) {
-      console.log(error);
-    }
+    const { data } = await this.axiosInstanceV4.get(
+      `${ this.databaseV4.parliament }/KNS_DocumentQuery?$filter=QueryID eq ${ queryId }`
+    );
+    return this.accumulateData(data);
   }
   async getBills() {
-    try {
-      const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.BILL);
-      const { data } = await this.axiosInstance.get(
-        `${ this.dataBases.parliament }/KNS_Bill?$filter=KnessetNum eq 25` +
+    const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.BILL);
+    const { data } = await this.axiosInstance.get(
+      `${ this.dataBases.parliament }/KNS_Bill?$filter=KnessetNum eq 25` +
         (lastRunDate ? ` and LastUpdatedDate gt datetime'${ lastRunDate }'` : '') +
         '&$expand=KNS_BillInitiators'
-      );
-      return this.accumulateData(data);
-    } catch (error) {
-      console.log(error);
-    }
+    );
+    return this.accumulateData(data);
   }
 
   async getBillsLinks(billsIds: number[]) {
     const updateData = [];
-    try {
-      logger.info(`Getting bills links for ${ billsIds.length } bills`);
-      let billNumber = 1;
-      for await (const billId of billsIds) {
-        logger.info(`Getting bill #${ billNumber } out of ${ billsIds.length }`, billId);
-        const { data } = await this.axiosInstance.get(
-          `${ this.dataBases.parliament }/KNS_DocumentBill?$filter=BillID eq ${ billId }&$orderby=LastUpdatedDate desc`
-        );
-        const getLatest = (data: any): any => {
-          const first = _.first(data) as any;
-          if (first.GroupTypeID !== 17 || first.GroupTypeID) return first;
+    logger.info(`Getting bills links for ${ billsIds.length } bills`);
+    let billNumber = 1;
+    for await (const billId of billsIds) {
+      logger.info(`Getting bill #${ billNumber } out of ${ billsIds.length }`, billId);
+      const { data } = await this.axiosInstance.get(
+        `${ this.dataBases.parliament }/KNS_DocumentBill?$filter=BillID eq ${ billId }&$orderby=LastUpdatedDate desc`
+      );
+      const getLatest = (data: any): any => {
+        const first = _.first(data) as any;
+        if (first.GroupTypeID !== 17 || first.GroupTypeID) return first;
 
-          // remove government decisions documents
-          return getLatest(data.slice(1));
-        };
+        // remove government decisions documents
+        return getLatest(data.slice(1));
+      };
 
-        const latest = getLatest(data.value);
-        updateData.push({
-          originId: billId,
-          billLink: latest.FilePath
-        });
-        logger.info(`Got bill #${ billNumber++ } out of ${ billsIds.length }`, billId);
-        await wait(0.3);
-      }
-      return updateData;
-    } catch (error) {
-      logger.error('Error getting bills links', error);
-      throw error;
+      const latest = getLatest(data.value);
+      updateData.push({
+        originId: billId,
+        billLink: latest.FilePath
+      });
+      logger.info(`Got bill #${ billNumber++ } out of ${ billsIds.length }`, billId);
+      await wait(0.3);
     }
+    return updateData;
   }
 }
 
