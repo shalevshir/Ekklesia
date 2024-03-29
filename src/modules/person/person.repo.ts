@@ -119,11 +119,19 @@ class PersonRepo extends BaseRepo<Person> {
     return (await this.peopleList).find((person) => person.originId === originId);
   }
 
-  async getPersonByFullNameHeb(name: string| RegExp): Promise<DocumentType<any>> {
+  async getPersonFromText(text: string): Promise<DocumentType<any>> {
     return (await this.peopleList).find((person) => {
-      const personName = `${ person.firstNameHeb } ${ person.lastNameHeb }`;
+      let firstName = person.firstNameHeb ?? '';
+      let lastName = person.lastNameHeb ?? '';
+      if (firstName.split(' ').length > 1) {
+        firstName = firstName.split(' ')[0];
+      }
+      if (lastName.split(' ').length > 1) {
+        lastName = lastName.split(' ')[0];
+      }
+      const personName = new RegExp(`${ firstName }.*${ lastName }`);
       // check if regex matches the name
-      return name instanceof RegExp ? name.test(personName) : personName.includes(name);
+      return text.match(personName);
     });
   }
 }
