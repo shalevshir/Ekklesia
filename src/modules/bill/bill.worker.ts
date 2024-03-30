@@ -55,10 +55,17 @@ class billWorker {
   }
 
   async updateBillDocument(job: any) {
-    logger.info({ message: 'Update bill document process started', jobId: job.id });
-    await billRepo.updateBillsDocumentsLinks();
-    logger.info('Update bill document process finished');
-    return true;
+    const run = await runHistoryRepo.initiateRunHistory(Entities.BILL_DOCUMENT);
+    try {
+      logger.info({ message: 'Update bill document process started', jobId: job.id });
+      const data = await billRepo.updateBillsDocumentsLinks();
+      logger.info('Update bill document process finished', { data });
+      await run.success({ message: 'Update bill document process finished', data });
+      return true;
+    } catch (error) {
+      logger.error('Error in updateBillDocument', error);
+      await run.fail(error as Error);
+    }
   }
 }
 

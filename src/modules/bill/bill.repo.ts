@@ -127,7 +127,7 @@ class BillsRepo extends BaseRepo<Bill> {
     const billsArranged: any[] = [];
     let billNumber = 1;
     for await (const bill of bills) {
-      logger.info(`Arranging bill #${ billNumber++ } out of ${ bills.length }`, `BillID: ${ bill.BillID }`);
+      logger.info(`Arranging bill #${ billNumber++ } out of ${ bills.length }`, { billId: bill.BillID });
       bill.initiator = [];
       const billType: string = this.types[bill.SubTypeID];
 
@@ -171,7 +171,8 @@ class BillsRepo extends BaseRepo<Bill> {
     if (!billsData) {
       throw new Error('No bills found');
     }
-    await this.updateMany(billsData);
+    const data = await this.updateMany(billsData, { upsert: true });
+    return data.map(this.mapUpsert);
   }
 
   async updateBillsStages() {

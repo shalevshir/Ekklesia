@@ -4,6 +4,7 @@ export enum Entities {
   COMMITTEE = 'committee',
   COMMITTEE_SESSION = 'committeeSession',
   BILL = 'bill',
+  BILL_DOCUMENT = 'billDocument',
   QUERY = 'query',
   AGENDA = 'agenda',
 }
