@@ -6,7 +6,9 @@ import { envVars } from './envVars';
 const logtail = new Logtail('UwXx2pbs8fhNhLK3NfGz4pgQ');
 const transports = [];
 if (envVars.NODE_ENV === 'production') {
-  const logtailTransport = new LogtailTransport(logtail);
+  const logtailTransport = new LogtailTransport(logtail, {
+    format: winston.format.json()
+  });
   transports.push(logtailTransport as any);
 } else {
   transports.push(new winston.transports.Console({
@@ -23,9 +25,6 @@ const logger = winston.createLogger({
   ),
   transports
 });
-logger.error('This is an error message');
-logger.warn('This is a warning message');
-logger.info('This is an info message');
 
 
 export default logger;
