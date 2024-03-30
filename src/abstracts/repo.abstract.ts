@@ -49,12 +49,12 @@ class BaseRepo <T> {
     return await this.model.findOneAndDelete(query);
   }
 
-  async findOrCreate(criteria: FilterQuery<T>, data: FilterQuery<T>) {
+  async findOrCreate(criteria: FilterQuery<T>, data?: FilterQuery<T>) {
     const result = await this.model.findOne(criteria);
     if (result) {
       return { doc: result, created: false };
     } else {
-      const newDoc = await this.model.create(data);
+      const newDoc = await this.model.create(data ? data : criteria);
       return { doc: newDoc, created: true };
     }
   }
