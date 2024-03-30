@@ -31,7 +31,6 @@ const startWorker = async () => {
   queueService.process('updateCommittee', committeeSessionWorker.fetchCommitteesSessions);
 
   logger.info('Worker is running...');
-  logger.error('Error Log');
 };
 
 startWorker().catch(logger.error);
