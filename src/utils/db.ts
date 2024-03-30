@@ -11,7 +11,7 @@ export let connection: Connection;
 const connectDB = async () => {
   try {
     const connectionObj = await mongoose.connect(
-      connectionUri, { connectTimeoutMS: 3000, socketTimeoutMS: 3000, waitQueueTimeoutMS: 10000 }
+      connectionUri, { connectTimeoutMS: 5000, socketTimeoutMS: 3000, waitQueueTimeoutMS: 30000 }
     );
     console.log('MongoDB Connected...');
     connection = connectionObj.connections[0];
