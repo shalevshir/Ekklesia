@@ -8,7 +8,8 @@ enum EnvVarEnum {
   REDISCLOUD_URL = 'REDISCLOUD_URL',
   DB_NAME = 'DB_NAME',
   DB_PASSWORD = 'DB_PASSWORD',
-  HUGGINGFACEHUB_API_KEY = 'HUGGINGFACEHUB_API_KEY'
+  HUGGINGFACEHUB_API_KEY = 'HUGGINGFACEHUB_API_KEY',
+  LOGTAIL_KEY = 'LOGTAIL_KEY'
 }
 
 // Load environment variables in non-production environments

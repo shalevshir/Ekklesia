@@ -11,11 +11,12 @@ const consoleTransport =
       winston.format.simple(),
     )
   });
-transports.push(consoleTransport);
-const logtail = new Logtail('UwXx2pbs8fhNhLK3NfGz4pgQ');
+const logtail = new Logtail(envVars.LOGTAIL_KEY as string);
 const logtailTransport = new LogtailTransport(logtail);
 if (envVars.NODE_ENV === 'production') {
   transports.push(logtailTransport);
+} else {
+  transports.push(consoleTransport);
 }
 const logger = winston.createLogger({
   transports
