@@ -7,7 +7,7 @@ const logtail = new Logtail('UwXx2pbs8fhNhLK3NfGz4pgQ');
 const transports = [];
 if (envVars.NODE_ENV === 'production') {
   const logtailTransport = new LogtailTransport(logtail);
-  transports.push(logtailTransport as any);
+  transports.push(logtailTransport);
 } else {
   transports.push(new winston.transports.Console({
     format: winston.format.combine(
@@ -19,11 +19,6 @@ if (envVars.NODE_ENV === 'production') {
 
 
 const logger = winston.createLogger({
-
-  format: winston.format.combine(
-    winston.format.splat(),
-    winston.format.json(),
-  ),
   transports
 });
 
