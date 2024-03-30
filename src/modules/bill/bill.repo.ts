@@ -7,9 +7,11 @@ import _ from 'lodash';
 import { connection } from '../../utils/db';
 import PersonModel from '../person/person.model';
 import logger from '../../utils/logger';
-import { getFileAsText } from '../../utils/files.service';
+import { getFileAsText, readCsv } from '../../utils/files.service';
 import embeddingService from '../../utils/embedding.service';
 import personRepo from '../person/person.repo';
+import path from 'path';
+import categoryRepo from '../category/category.repo';
 
 class BillsRepo extends BaseRepo<Bill> {
   constructor() {
@@ -225,6 +227,46 @@ class BillsRepo extends BaseRepo<Bill> {
       logger.error({ message: 'Error in updateBillStages', error });
       throw error;
     }
+  }
+
+  async updateBillsCategories() {
+    const bills = await this.model.find({ categories: { $ne: null } }).lean();
+    const pathToFile = path.join(__dirname, '../..', 'categorized.bills.csv');
+    const data = await readCsv(pathToFile);
+    logger.info({ message: `Updating categories for ${ bills.length } bills ` });
+    let billNumber = 1;
+    const toPromise = [];
+    for (const bill of bills) {
+      logger.info({ message: `Updating bill #${ billNumber } out of ${ bills.length }`, billId: bill._id });
+      const billData = data.find((data) => +data.originId === +bill.originId);
+      if (!billData) {
+        logger.info(`No categories found for bill #${ billNumber } out of ${ bills.length }`, { billId: bill._id });
+        billNumber++;
+        continue;
+      }
+      let categoryText = billData.categories;
+      if (billData['re-categorize']) {
+        categoryText = billData['re-categorize'];
+      }
+      const categoriesToSet = [];
+      const categories = categoryText.split(',').map((category: string) => category.trim());
+
+      for (const category of categories) {
+        const categoryObj = await categoryRepo.findOrCreate({ name: category, isMainCategory: true });
+        categoriesToSet.push(categoryObj.doc._id);
+      };
+      const subCategoriesText = billData.subCategory;
+      if (subCategoriesText) {
+        const subCategories = subCategoriesText.split(',').map((category: string) => category.trim());
+        for (const subCategory of subCategories) {
+          const categoryObj = await categoryRepo.findOrCreate({ name: subCategory, isMainCategory: false });
+          categoriesToSet.push(categoryObj.doc._id);
+        };
+      }
+      toPromise.push(this.model.findOneAndUpdate({ _id: bill._id }, { categories: categoriesToSet }));
+      billNumber++;
+    }
+    await Promise.all(toPromise);
   }
 
   async embedBills() {

@@ -67,6 +67,18 @@ class billWorker {
       await run.fail(error as Error);
     }
   }
+
+  async updateBillsCategories() {
+    try {
+      logger.info('Update bills categories process started');
+      await billRepo.updateBillsCategories();
+      logger.info('Update bills categories process finished');
+      return true;
+    } catch (error) {
+      logger.error('Error in updateBillsCategories', error);
+      throw error;
+    }
+  }
 }
 
 export default new billWorker();

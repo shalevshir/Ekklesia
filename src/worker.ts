@@ -24,6 +24,7 @@ const startWorker = async () => {
   queueService.process('fetchBills', billWorker.fetchBills);
   queueService.process('updateBillsStages', billWorker.updateBillsStages);
   queueService.process('updateBillDocument', billWorker.updateBillDocument);
+  queueService.process('updateBillsCategories', billWorker.updateBillsCategories);
 
   // CommitteeSession
   queueService.process('updateCommitteeSessions', committeeSessionWorker.runFetchSessionsTask);
