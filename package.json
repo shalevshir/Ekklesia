@@ -23,6 +23,8 @@
     "@langchain/core": "^0.1.48",
     "@langchain/mongodb": "^0.0.1",
     "@langchain/openai": "^0.0.14",
+    "@logtail/node": "^0.4.21",
+    "@logtail/winston": "^0.4.21",
     "@typegoose/typegoose": "^12.1.0",
     "axios": "^1.4.0",
     "bull": "^4.12.2",
