@@ -158,7 +158,7 @@ class KnessetService {
       );
       const getLatest = (data: any): any => {
         const first = _.first(data) as any;
-        if (first.GroupTypeID !== 17 || first.GroupTypeID) return first;
+        if (first?.GroupTypeID !== 17 || first?.GroupTypeID) return first;
 
         // remove government decisions documents
         return getLatest(data.slice(1));
