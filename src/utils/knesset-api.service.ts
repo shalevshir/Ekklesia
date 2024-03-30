@@ -165,11 +165,15 @@ class KnessetService {
       };
 
       const latest = getLatest(data.value);
-      updateData.push({
-        originId: billId,
-        billLink: latest.FilePath
-      });
-      logger.info(`Got bill #${ billNumber++ } out of ${ billsIds.length }`, billId);
+      if (latest) {
+        updateData.push({
+          originId: billId,
+          billLink: latest.FilePath
+        });
+        logger.info(`Got bill #${ billNumber++ } out of ${ billsIds.length }`, billId);
+      } else {
+        logger.info(`No document for bill #${ billNumber++ } out of ${ billsIds.length }`, billId);
+      }
       await wait(0.3);
     }
     return updateData;
