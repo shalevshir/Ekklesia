@@ -125,8 +125,9 @@ class BillsRepo extends BaseRepo<Bill> {
   async arrangeBills(bills: any[]) {
     logger.info(`Arranging ${ bills.length } bills`);
     const billsArranged: any[] = [];
+    let billNumber = 1;
     for await (const bill of bills) {
-      logger.info(`Arranging bill ${ bill.BillID }`);
+      logger.info(`Arranging bill #${ billNumber++ } out of ${ bills.length }`, `BillID: ${ bill.BillID }`);
       bill.initiator = [];
       const billType: string = this.types[bill.SubTypeID];
 
@@ -157,7 +158,6 @@ class BillsRepo extends BaseRepo<Bill> {
         committee: committee ? committee._id : null,
         initiators: bill.initiator
       };
-      logger.info(`Arranged bill ${ bill.BillID }`);
       billsArranged.push(arrangedBill);
     }
     logger.info('Arranged all bills');
