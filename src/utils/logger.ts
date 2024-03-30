@@ -6,15 +6,13 @@ const logger = winston.createLogger({
     new winston.transports.Console({
       format: winston.format.simple()
     })
-  ]
+  ],
+  levels: winston.config.syslog.levels
 });
 
 logger.error('This is an error message');
 logger.warn('This is a warning message');
 logger.info('This is an info message');
-logger.verbose('This is a verbose message');
-logger.debug('This is a debug message');
-logger.silly('This is a silly message');
 
 
 export default logger;
