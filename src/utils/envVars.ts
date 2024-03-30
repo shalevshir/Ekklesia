@@ -1,6 +1,5 @@
 /* eslint-disable no-process-env */
 // Import necessary modules
-import logger from './logger';
 
 // Enum for environment variables
 enum EnvVarEnum {
@@ -26,7 +25,7 @@ const envVars = new Map<EnvVarEnum, string>();
 // Populate the Map with environment variables, log if any are missing
 envVarList.forEach((envVar) => {
   if (!process.env[envVar]) {
-    logger.error('Missing env var: ' + envVar);
+    console.error('Missing env var: ' + envVar);
   } else {
     envVars.set(envVar, process.env[envVar] as string);
   }
@@ -40,10 +39,6 @@ type EnvVars = {
 const envProxy: EnvVars = new Proxy({}, {
   get(target, name: string) {
     const envVar = envVars.get(name as EnvVarEnum);
-    if (!envVar) {
-      logger.error(`Missing env var: ${ name }`);
-      return;
-    }
     return envVar;
   }
 });
