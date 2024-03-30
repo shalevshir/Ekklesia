@@ -3,7 +3,7 @@ import winston from 'winston';
 const transports =
   new winston.transports.Console({
     format: winston.format.combine(
-      winston.format.simple(),
+      winston.format.json(),
     )
   });
 
