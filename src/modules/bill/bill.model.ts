@@ -129,9 +129,6 @@ export class Bill {
 
   @prop({ type: [ Number ] })
     vector?: number[];
-
-  @prop({ type: [ Category ] })
-    newCategories?: Category[];
 }
 
 const BillModel = getModelForClass(Bill);
