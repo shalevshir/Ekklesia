@@ -9,7 +9,12 @@ if (envVars.NODE_ENV === 'production') {
   const logtailTransport = new LogtailTransport(logtail);
   transports.push(logtailTransport as any);
 } else {
-  transports.push(new winston.transports.Console());
+  transports.push(new winston.transports.Console({
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.simple(),
+    )
+  }));
 }
 
 
