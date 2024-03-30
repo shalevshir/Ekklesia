@@ -6,7 +6,12 @@ class QueueService {
   workerQueue: QueueType;
 
   constructor() {
-    this.workerQueue = new Queue('workerQueue', envVars.REDISCLOUD_URL || 'redis://127.0.0.1:6379');
+    this.workerQueue = new Queue('workerQueue', envVars.REDISCLOUD_URL || 'redis://127.0.0.1:6379', {
+      limiter: {
+        max: 2,
+        duration: 60000
+      }
+    });
   }
 
   async process(name: string, callback: (job: Queue.Job, done: Queue.DoneCallback) => void) {
