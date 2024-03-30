@@ -54,10 +54,11 @@ class billWorker {
     return true;
   }
 
-  async updateBillDocument(job: any) {
+  async updateBillDocument(job: Job, done: DoneCallback) {
     const run = await runHistoryRepo.initiateRunHistory(Entities.BILL_DOCUMENT);
     try {
       logger.info({ message: 'Update bill document process started', jobId: job.id });
+      done();
       const data = await billRepo.updateBillsDocumentsLinks();
       logger.info('Update bill document process finished', { data });
       await run.success({ message: 'Update bill document process finished', data });
