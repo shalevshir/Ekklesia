@@ -4,30 +4,19 @@ import { LogtailTransport } from '@logtail/winston';
 import { envVars } from './envVars';
 
 const logtail = new Logtail('UwXx2pbs8fhNhLK3NfGz4pgQ');
-const transports = [];
+const transports = [ new winston.transports.Console({
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.simple(),
+  )
+}) ];
 if (envVars.NODE_ENV === 'production') {
   const logtailTransport = new LogtailTransport(logtail);
-  transports.push(logtailTransport);
-} else {
-  transports.push(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple(),
-    )
-  }));
+  transports.push(logtailTransport as any);
 }
 
-
 const logger = winston.createLogger({
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple(),
-      )
-    }),
-    new LogtailTransport(logtail)
-  ]
+  transports
 });
 
 
