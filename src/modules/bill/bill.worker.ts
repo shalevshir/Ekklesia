@@ -63,8 +63,8 @@ class billWorker {
       logger.info('Update bill document process finished', { data });
       await run.success({ message: 'Update bill document process finished', data });
       return true;
-    } catch (error) {
-      logger.error('Error in updateBillDocument', { error });
+    } catch (error: any) {
+      logger.error('Error in updateBillDocument', { error: error.message, stack: error.stack });
       await run.fail(error as Error);
     }
   }
