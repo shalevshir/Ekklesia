@@ -138,6 +138,7 @@ class KnessetService {
   }
   async getBills() {
     const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.BILL);
+    logger.info('Fetching bills', { lastRunDate });
     const { data } = await this.axiosInstance.get(
       `${ this.dataBases.parliament }/KNS_Bill?$filter=KnessetNum eq 25` +
         (lastRunDate ? ` and LastUpdatedDate gt datetime'${ lastRunDate }'` : '') +
