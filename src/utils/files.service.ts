@@ -50,7 +50,7 @@ async function downloadAndSaveFile(url: string): Promise<string> {
   try {
     const response = await axios.get(url, { responseType: 'stream' });
     const fileName = path.basename(url);
-    const filePath = path.join(__dirname, '../..', '.temp', fileName);
+    const filePath = path.join( '/tmp', fileName);
     const writer = fs.createWriteStream(filePath);
 
     response.data.pipe(writer);
