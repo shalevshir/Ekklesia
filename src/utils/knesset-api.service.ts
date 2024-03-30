@@ -174,7 +174,7 @@ class KnessetService {
       } else {
         logger.info(`No document for bill #${ billNumber++ } out of ${ billsIds.length }`, billId);
       }
-      await wait(0.3);
+      await wait(0.7);
     }
     return updateData;
   }
