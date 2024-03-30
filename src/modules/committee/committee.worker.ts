@@ -14,11 +14,11 @@ class CommitteeWorker {
       done();
       const data = await committeeRepo.fetchCommitteesFromKnessetApi();
       logger.info('Fetching committees process finished');
-      run.success({ message: 'Fetch committees process finished', data });
+      await run.success({ message: 'Fetch committees process finished', data });
       return true;
     } catch (error) {
       logger.error('Error in fetchCommitteesFromKnessetApi', error);
-      run.fail(error as Error);
+      await run.fail(error as Error);
     }
   }
 

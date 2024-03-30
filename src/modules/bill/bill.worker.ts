@@ -18,10 +18,9 @@ class billWorker {
       return true;
     } catch (error) {
       logger.error('Error in fetchBills', error);
-      run.fail(
+      await run.fail(
         error as Error
       );
-      throw error;
     }
   }
 

@@ -13,12 +13,11 @@ class queriesWorker {
       done();
       const data = await queryRepo.fetchQueriesFromKnesset();
       logger.info('Fetching queries process finished');
-      run.success({ message: 'Fetch queries process finished', data });
+      await run.success({ message: 'Fetch queries process finished', data });
       return true;
     } catch (error) {
       logger.error('Error in fetchQueries', error);
-      run.fail(error as Error);
-      throw error;
+      await run.fail(error as Error);
     }
   }
 }

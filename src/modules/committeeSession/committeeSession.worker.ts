@@ -20,7 +20,6 @@ class CommitteeSessionWorker {
       return true;
     } catch (error) {
       logger.error('Error in fetchCommitteesSessions', error);
-      throw error;
     }
   }
 
@@ -31,12 +30,12 @@ class CommitteeSessionWorker {
       logger.info({ message: 'Fetch committees sessions process started', jobId: job.id });
       const data = await committeeSessionRepo.fetchCommitteesSessions(job.data?.data, run);
       logger.info('Fetching committees sessions process finished');
-      run.success({ message: 'Fetch committees sessions process finished', data });
+      await run.success({ message: 'Fetch committees sessions process finished', data });
       done();
       return true;
     } catch (error) {
       logger.error('Error in fetchCommitteesSessions', error);
-      run.fail(error as Error);
+      await run.fail(error as Error);
     }
   }
 }

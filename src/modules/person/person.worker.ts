@@ -16,7 +16,7 @@ class PersonWorker {
       return true;
     } catch (error) {
       logger.error('Error in fetchPeople', error);
-      run.fail(
+      await run.fail(
         error as Error
       );
     }
