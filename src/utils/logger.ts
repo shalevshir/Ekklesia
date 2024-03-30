@@ -1,49 +1,20 @@
 import winston from 'winston';
+import { Logtail } from '@logtail/node';
 
+const logtail = new Logtail('UwXx2pbs8fhNhLK3NfGz4pgQ');
+const transports = [
+  new winston.transports.Console({
+    format: winston.format.simple()
+  })
+];
 const logger = winston.createLogger({
 
-  // level: 'error',
   format: winston.format.combine(
     winston.format.splat(),
-    winston.format.timestamp(),
     winston.format.json(),
   ),
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.simple()
-    })
-    //   new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    //   new winston.transports.File({ filename: 'combined.log' })
-
-  ]
+  transports
 });
-// class Logger {
-//   logger: winston.Logger;
-//   constructor() {
-//     this.logger = winston.createLogger({
-//       format: winston.format.json(),
-//       transports: [
-//         new winston.transports.Console({
-//           format: winston.format.simple()
-//         }),
-//         new winston.transports.File({ filename: 'error.log', level: 'error' }),
-//         new winston.transports.File({ filename: 'combined.log' })
-
-//       ]
-//     });
-//   }
-//   public error(message: string) {
-//     logger.error(message);
-//   }
-
-//   public warn(message: string) {
-//     logger.warn(message);
-//   }
-
-//   public info(message: string) {
-
-// logger.level = 'error';
-
 logger.error('This is an error message');
 // // logger.warn('This is a warning message');
 // logger.info('This is an info message');
