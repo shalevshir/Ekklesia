@@ -30,6 +30,9 @@ const startWorker = async () => {
   queueService.process('updateCommitteeSessions', committeeSessionWorker.runFetchSessionsTask);
   queueService.process('updateCommittee', committeeSessionWorker.fetchCommitteesSessions);
 
+  queueService.process('keepAwake', async () => {
+    logger.info('Worker is awake');
+  });
   logger.info('Worker is running...');
 };
 
