@@ -231,7 +231,7 @@ class BillsRepo extends BaseRepo<Bill> {
 
   async updateBillsCategories() {
     const bills = await this.model.find({ categories: { $ne: null } }).lean();
-    const pathToFile = path.join(__dirname, '../..', 'categorized.bills.csv');
+    const pathToFile = path.join(__dirname, '../../..', 'categorized.bills.csv');
     const data = await readCsv(pathToFile);
     logger.info({ message: `Updating categories for ${ bills.length } bills ` });
     let billNumber = 1;
