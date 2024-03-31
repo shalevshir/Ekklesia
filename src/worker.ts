@@ -10,7 +10,8 @@ import queueService from './utils/queue.service';
 const startWorker = async () => {
   await connectDB();
 
-  logger.error('test error', { test: 'data' });
+  logger.error({ message: 'test error', test: 'data' });
+  logger.error({ message: 'test error', test: 'data' });
 
   // Person
   queueService.process('fetchPeople', personWorker.fetchPeople);
@@ -35,7 +36,8 @@ const startWorker = async () => {
   queueService.process('keepAwake', async () => {
     logger.info('Worker is awake');
   });
-  logger.info('Worker is running...');
+  logger.info('Worker is running...', { date: new Date() });
+  logger.info({ message: 'Worker is running...', date: new Date() });
 };
 
 startWorker().catch(logger.error);
