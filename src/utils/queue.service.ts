@@ -12,13 +12,16 @@ class QueueService {
         duration: 60000
       }
     });
+    this.workerQueue.on('error', (error) => {
+      console.error('Queue error:', error);
+    });
   }
 
   async process(name: string, callback: (job: Queue.Job, done: Queue.DoneCallback) => void) {
     await this.workerQueue.process(name, callback);
   }
 
-  async add(name: string, data: any) {
+  async add(name: string, data?: any) {
     await this.workerQueue.add(name, data);
   }
 
