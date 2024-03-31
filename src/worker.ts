@@ -10,6 +10,8 @@ import queueService from './utils/queue.service';
 const startWorker = async () => {
   await connectDB();
 
+  logger.error('test error', { test: 'data' });
+
   // Person
   queueService.process('fetchPeople', personWorker.fetchPeople);
 
