@@ -25,6 +25,10 @@ class QueryRepo extends BaseRepo<Query> {
     logger.info({ message: `fetched ${ queriesData.length } queries from knesset` });
     const arrangedQueries = await this.arrangeQueries(queriesData);
     const data = await this.updateMany(arrangedQueries, { upsert: true });
+    const toPromise = data.map((query) => {
+      return personRepo.findAndUpdate({ _id: query.submitter }, { $addToSet: { queries: query._id } });
+    });
+    await Promise.all(toPromise);
     return data.map(this.mapUpsert);
   }
 
