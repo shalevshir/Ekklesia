@@ -22,7 +22,7 @@ class QueryRepo extends BaseRepo<Query> {
   }
   async fetchQueriesFromKnesset() {
     const queriesData = await knessetApiService.getQueries();
-    logger.info({ message: `fetched ${ queriesData.length } queries from knesset` });
+    logger.info({ message: `fetched ${ queriesData?.length } queries from knesset` });
     const arrangedQueries = await this.arrangeQueries(queriesData);
     const data = await this.updateMany(arrangedQueries, { upsert: true });
     const toPromise = data.map((query) => {
