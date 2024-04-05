@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongoose';
 import { DocumentType } from '@typegoose/typegoose';
 import BaseRepo from '../../abstracts/repo.abstract';
 import CommitteeSessionModel, { Attendee, AttendeeRole, CommitteeSession, SessionType } from './committeeSession.model';
@@ -9,7 +10,6 @@ import logger from '../../utils/logger';
 import _ from 'lodash';
 import { Person } from '../person/person.model';
 import committeeRepo from '../committee/committee.repo';
-import { RunHistory } from '../runHistory/runHistory.model';
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
@@ -17,10 +17,10 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
     super(CommitteeSessionModel);
   }
 
-  async fetchCommitteesSessions(committee: DocumentType<Committee>, run: DocumentType<RunHistory>) {
+  async fetchCommitteesSessions(committee: DocumentType<Committee>, entityId?: ObjectId) {
     const committeesSessions = await knessetApiService.getCommitteeSessions(
       committee.originId,
-      run?.entityId
+      entityId
     );
     if (!committeesSessions || !committeesSessions.length) {
       logger.info('No sessions found for committee', { committeeId: committee._id });
@@ -33,12 +33,22 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
     );
 
     const data = await this.updateMany(arrangedCommitteesSessions, { upsert: true });
+    const toPromise = [];
+    for (const session of data) {
+      const attendeesIds = session.attendees.map((attendee: any) => attendee.person._id);
+      for (const attendeeId of attendeesIds) {
+        toPromise.push(personRepo.model.findByIdAndUpdate( attendeeId, { $push: { committeeSessions: session._id } }));
+      }
+    }
+    await Promise.all(toPromise);
+
     const sessionsData = data.map(this.mapUpsert);
     logger.info(`Updated ${ sessionsData.length } sessions`);
     const sessionIds = _.chain(sessionsData).
       filter((session) => session.created).map((session) => session.id).value();
-      // logger.info('Updating committee with sessions', { sessionIds });
-    await committeeRepo.findAndUpdate({ _id: committee._id }, { sessions: sessionIds });
+    logger.info('Updating committee with sessions', { sessionIds });
+    await committeeRepo.model.findByIdAndUpdate(committee._id, { $push: { sessions: { $each: sessionIds } } });
+
     logger.info({ message: 'Fetched sessions for committee', committeeId: committee._id });
     return sessionsData || [];
   }

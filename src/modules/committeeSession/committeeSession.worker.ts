@@ -5,6 +5,8 @@ import { Entities } from '../../types/entities.enum';
 import runHistoryRepo from '../runHistory/runHistory.repo';
 import committeeSessionRepo from './committeeSession.repo';
 import queueService from '../../utils/queue.service';
+import { DocumentType } from '@typegoose/typegoose';
+import { Committee } from '../committee/committee.model';
 
 class CommitteeSessionWorker {
   async runFetchSessionsTask(job: Job, done: DoneCallback) {
@@ -14,7 +16,7 @@ class CommitteeSessionWorker {
       const committees = await committeeRepo.find({});
       for (const committee of committees) {
         logger.info({ message: 'Running fetching committee sessions', committeeId: committee._id });
-        queueService.add('updateCommittee', { data: committee });
+        queueService.add('updateCommittee', { committeeId: committee._id });
       }
       logger.info('Fetching committees sessions process finished');
       return true;
@@ -24,11 +26,12 @@ class CommitteeSessionWorker {
   }
 
   async fetchCommitteesSessions(job: Job, done: DoneCallback) {
-    const committee = job.data?.data;
-    const run = await runHistoryRepo.initiateRunHistory(Entities.COMMITTEE_SESSION, committee._id);
+    const committeeId = job.data?.committeeId;
+    const run = await runHistoryRepo.initiateRunHistory(Entities.COMMITTEE_SESSION, committeeId);
     try {
-      logger.info({ message: 'Fetch committees sessions process started', jobId: job.id });
-      const data = await committeeSessionRepo.fetchCommitteesSessions(job.data?.data, run);
+      const committee = await committeeRepo.model.findById(committeeId) as DocumentType<Committee>;
+      logger.info({ message: 'Fetch committees sessions process started', jobId: job.id, committeeId: committeeId });
+      const data = await committeeSessionRepo.fetchCommitteesSessions(committee, run?.entityId);
       logger.info('Fetching committees sessions process finished');
       await run.success({ message: 'Fetch committees sessions process finished', data });
       done();
