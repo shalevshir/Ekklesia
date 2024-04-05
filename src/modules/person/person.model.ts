@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongoose';
 import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose';
 import { rolesEnum } from '../../types/roles.enum';
 import { Ministry } from '../ministry/ministry.model';
@@ -27,6 +28,14 @@ class Committee {
 
   @prop()
     isChairman?: boolean;
+}
+
+class CommitteeSessionSchema {
+  @prop({ ref: 'Committee' })
+    _id!: ObjectId;
+
+  @prop({ enum: [ 'chairman', 'member', 'guest' ] })
+    role!: string;
 }
 
 
@@ -94,8 +103,8 @@ export class Person {
   @prop({ ref: 'Query' })
     queries?: Ref<string>[];
 
-  @prop({ ref: 'CommitteeSession', type: () => String, refPath: 'attendees' })
-    committeeSessions?: Ref<string>[];
+  @prop({ type: [ CommitteeSessionSchema ] })
+    committeeSessions?: CommitteeSessionSchema[];
 }
 
 

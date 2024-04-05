@@ -35,9 +35,20 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
     const data = await this.updateMany(arrangedCommitteesSessions, { upsert: true });
     const toPromise = [];
     for (const session of data) {
-      const attendeesIds = session.attendees.map((attendee: any) => attendee.person._id);
-      for (const attendeeId of attendeesIds) {
-        toPromise.push(personRepo.model.findByIdAndUpdate( attendeeId, { $push: { committeeSessions: session._id } }));
+      const attendeesIds = session.attendees.map((attendee: any) => ({
+        personId: attendee.person._id,
+        role: attendee.role
+      }));
+
+      for (const attendee of attendeesIds) {
+        toPromise.push(personRepo.model.findByIdAndUpdate(attendee.personId, {
+          $push: {
+            committeeSessions: {
+              _id: session._id,
+              role: attendee.role
+            }
+          }
+        }));
       }
     }
     await Promise.all(toPromise);
