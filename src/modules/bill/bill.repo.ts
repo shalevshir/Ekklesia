@@ -136,6 +136,7 @@ class BillsRepo extends BaseRepo<Bill> {
     const billsArranged: any[] = [];
     let billNumber = 1;
     for await (const bill of bills) {
+      console.log(bill);
       logger.info(`Arranging bill #${ billNumber++ } out of ${ bills.length }`, { billId: bill.BillID });
       bill.initiator = [];
       const billType: string = this.types[bill.SubTypeID];
