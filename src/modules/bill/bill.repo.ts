@@ -121,6 +121,13 @@ class BillsRepo extends BaseRepo<Bill> {
     const billsData = await knessetApiService.getBills();
     const arrangedBills = await this.arrangeBills(billsData);
     const updatedBills = await this.updateMany(arrangedBills, { upsert: true });
+    const toPromise = [];
+    for (const bill of updatedBills) {
+      for (const initiator of bill.initiators) {
+        toPromise.push(personRepo.findAndUpdate({ _id: initiator }, { $addToSet: { bills: bill._id } }));
+      }
+    }
+    await Promise.all(toPromise);
     return updatedBills.map(this.mapUpsert);
   }
 
