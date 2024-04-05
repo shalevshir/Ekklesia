@@ -123,9 +123,12 @@ class KnessetService {
   async getQueries() {
     const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.QUERY);
     logger.info({ message: 'Fetching queries, last run:' + lastRunDate, lastRunDate });
+    const url =
+    `${ this.databaseV4.parliament }/KNS_Query?$expand=KNS_GovMinistry&$filter=KnessetNum eq 25` +
+      (lastRunDate ? ` and LastUpdatedDate gt ${ lastRunDate }` : '');
+    logger.info({ message: 'Fetching queries, url:' + url });
     const { data } = await this.axiosInstanceV4.get(
-      `${ this.databaseV4.parliament }/KNS_Query?$expand=KNS_GovMinistry&$filter=KnessetNum eq 25` +
-        (lastRunDate ? ` and LastUpdatedDate gt ${ lastRunDate }` : '')
+      url
     );
     return data.value;
   }
