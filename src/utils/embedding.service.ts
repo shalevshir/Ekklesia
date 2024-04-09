@@ -1,8 +1,8 @@
 import { DoneCallback, Job } from 'bull';
 import { OpenAIEmbeddings } from '@langchain/openai';
-import categoryRepo from '../modules/category/category.repo';
+import categoryRepo from '../modules/category/mainCategory.repo';
 import { MongoDBAtlasVectorSearch } from '@langchain/mongodb';
-import { Category } from '../modules/category/category.model';
+import { MainCategory } from '../modules/category/mainCategory.model';
 import { connection } from './db';
 import logger from './logger';
 import { HuggingFaceInferenceEmbeddings } from '@langchain/community/embeddings/hf';
@@ -93,7 +93,7 @@ class EmbeddingService {
       const toPromise = [];
       for (const category of categories) {
         // if(!category.subCategories?.length) continue;
-        const subCategories = category.subCategories as Category[];
+        const subCategories = category.subCategories as MainCategory[];
         const subCategoriesNames = subCategories.map((subCategory) => subCategory.name);
         let dataToQuery = category.name;
         if (subCategoriesNames?.length) {
