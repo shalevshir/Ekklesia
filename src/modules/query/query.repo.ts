@@ -3,7 +3,6 @@ import QueryModel, { Query } from './query.model';
 import knessetApiService from '../../utils/knesset-api.service';
 import personRepo from '../person/person.repo';
 import ministryRepo from '../ministry/ministry.repo';
-import categoryRepo from '../category/category.repo';
 import logger from '../../utils/logger';
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -101,35 +100,35 @@ class QueryRepo extends BaseRepo<Query> {
     return query;
   }
 
-  async addCategoryToQuery(queryId: number, categories: any[]) {
-    const queryObj = await this.findOne({ _id: queryId });
-    const toSave = [];
-    if (!queryObj) {
-      throw new Error(`Query ${ queryId } not found`);
-    }
-    for (const category of categories) {
-      const { subCategoryId, mainCategory, subCategoryName } = category;
-      if (subCategoryId) {
-        const subCategoryObj = await categoryRepo.findOne({
-          _id: subCategoryId
-        });
-        if (!subCategoryObj) {
-          throw new Error(`Category ${ subCategoryId } not found`);
-        }
-        toSave.push(subCategoryObj._id);
-      } else {
-        // create new category
-        const newCategory = await categoryRepo.create({
-          name: subCategoryName,
-          isMainCategory: false
-        });
-        await categoryRepo.update({ name: mainCategory }, { $push: { subCategories: newCategory._id } });
-        toSave.push(newCategory._id);
-      }
-    }
-    await queryObj.updateOne({ categories: toSave });
-    return queryObj;
-  }
+  // async addCategoryToQuery(queryId: number, categories: any[]) {
+  //   const queryObj = await this.findOne({ _id: queryId });
+  //   const toSave = [];
+  //   if (!queryObj) {
+  //     throw new Error(`Query ${ queryId } not found`);
+  //   }
+  //   for (const category of categories) {
+  //     const { subCategoryId, mainCategory, subCategoryName } = category;
+  //     if (subCategoryId) {
+  //       const subCategoryObj = await categoryRepo.findOne({
+  //         _id: subCategoryId
+  //       });
+  //       if (!subCategoryObj) {
+  //         throw new Error(`Category ${ subCategoryId } not found`);
+  //       }
+  //       toSave.push(subCategoryObj._id);
+  //     } else {
+  //       // create new category
+  //       const newCategory = await categoryRepo.create({
+  //         name: subCategoryName,
+  //         isMainCategory: false
+  //       });
+  //       await categoryRepo.update({ name: mainCategory }, { $push: { subCategories: newCategory._id } });
+  //       toSave.push(newCategory._id);
+  //     }
+  //   }
+  //   await queryObj.updateOne({ categories: toSave });
+  //   return queryObj;
+  // }
 }
 
 export default new QueryRepo();

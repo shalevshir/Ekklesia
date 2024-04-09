@@ -2,7 +2,8 @@ import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose'
 import { TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
 import { Person } from '../person/person.model';
 import { Ministry } from '../ministry/ministry.model';
-import { Category } from '../category/category.model';
+import { MainCategory } from '../category/mainCategory.model';
+import { SubCategory } from '../category/subCategory.model';
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Query extends TimeStamps {
@@ -39,8 +40,11 @@ export class Query extends TimeStamps {
   @prop({ ref: Ministry })
     replyMinistry!: Ref<Ministry>;
 
-  @prop({ ref: Array<Category> })
-    categories!: Ref<Category>[];
+  @prop({ ref: Array<MainCategory> })
+    mainCategories!: Ref<MainCategory>[];
+
+  @prop({ ref: Array<SubCategory> })
+    subCategories!: Ref<SubCategory>[];
 }
 
 const QueryModel = getModelForClass(Query);
