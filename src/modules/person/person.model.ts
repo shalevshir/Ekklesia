@@ -68,6 +68,9 @@ export class Person {
     lastNameHeb?: string;
 
   @prop()
+    fullName?: string;
+
+  @prop()
     age?: number;
 
   @prop({ enum: [ 'male', 'female' ] })
