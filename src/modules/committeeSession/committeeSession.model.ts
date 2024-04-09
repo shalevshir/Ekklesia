@@ -63,10 +63,10 @@ export class CommitteeSession {
   @prop({ type: [ Attendee ] })
     attendees?: Attendee[];
 
-  @prop({ ref: MainCategory })
+  @prop({ ref: Array<MainCategory> })
     categories?: Ref<MainCategory>[];
 
-  @prop({ ref: SubCategory })
+  @prop({ ref: Array<SubCategory> })
     subCategories?: Ref<SubCategory>[];
 
   @prop({ type: [ String ] })
