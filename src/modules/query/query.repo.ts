@@ -35,12 +35,14 @@ class QueryRepo extends BaseRepo<Query> {
     return data.map(this.mapUpsert);
   }
 
-  async arrangeQueries(queries: any[]): Promise<Query[]> {
+  async arrangeQueries(queries: any[]): Promise<Partial<Query>[]> {
     let queryNumber = 1;
     const queriesToSave = [];
     // queries = queries.splice(0, 3);
     for (const query of queries) {
-      logger.info({ message: `Mapping query #${ queryNumber } out of ${ queries.length }`, queryOriginId: query.QueryID });
+      logger.info({
+        message: `Mapping query #${ queryNumber } out of ${ queries.length }`, queryOriginId: query.QueryID
+      });
       if (!query.QueryID) {
         query.QueryID = query.Id;
       }
@@ -70,7 +72,7 @@ class QueryRepo extends BaseRepo<Query> {
       } else {
         delete query.PersonID;
       }
-      const queryToSend: Query = {
+      const queryToSend: Partial<Query> = {
         originId: query.QueryID,
         name: query.Name,
         type: this.typesEnum[query.TypeID],
