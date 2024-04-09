@@ -51,8 +51,8 @@ class QueryRepo extends BaseRepo<Query> {
         throw new Error(`Ministry ${ query.KNS_GovMinistry.Name } not found`);
       }
       query.replyMinistry = ministry?._id;
-      const categoryByMinistry = ministryRepo.getCategoryByMinistryName(query.KNS_GovMinistry.Name);
-      query.categories = categoryByMinistry ? [ categoryByMinistry ] : [];
+      // const categoryByMinistry = ministryRepo.getCategoryByMinistryName(query.KNS_GovMinistry.Name);
+      // query.categories = categoryByMinistry ? [ categoryByMinistry ] : [];
       const documents = await knessetApiService.getQueriesDocuments(query.Id);
       for ( const document of documents ? documents : []) {
         if (document && document.GroupTypeDesc === 'שאילתה') {
@@ -80,8 +80,8 @@ class QueryRepo extends BaseRepo<Query> {
         submitter: query.PersonID,
         replyMinistry: query.replyMinistry,
         queryLink: query.queryLink,
-        replyLink: query.replyLink,
-        categories: query.categories
+        replyLink: query.replyLink
+        // categories: query.categories
       };
 
       logger.info({ message: `Query #${ queryNumber } mapped`, query: queryToSend });
