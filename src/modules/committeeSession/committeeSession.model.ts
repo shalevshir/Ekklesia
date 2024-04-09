@@ -2,7 +2,8 @@ import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose'
 import { Committee } from '../committee/committee.model';
 import { Bill } from '../bill/bill.model';
 import { Person } from '../person/person.model';
-import { Category } from '../category/category.model';
+import { MainCategory } from '../category/mainCategory.model';
+import { SubCategory } from '../category/subCategory.model';
 
 export enum SessionType {
   Open = 'open',
@@ -62,8 +63,11 @@ export class CommitteeSession {
   @prop({ type: [ Attendee ] })
     attendees?: Attendee[];
 
-  @prop({ ref: Category })
-    categories?: Ref<Category>[];
+  @prop({ ref: MainCategory })
+    categories?: Ref<MainCategory>[];
+
+  @prop({ ref: SubCategory })
+    subCategories?: Ref<SubCategory>[];
 
   @prop({ type: [ String ] })
     missingAttendees?: string[];
