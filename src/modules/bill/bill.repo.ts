@@ -11,7 +11,8 @@ import { getFileAsText, readCsv } from '../../utils/files.service';
 import embeddingService from '../../utils/embedding.service';
 import personRepo from '../person/person.repo';
 import path from 'path';
-import categoryRepo from '../category/category.repo';
+import mainCategoryRepo from '../category/mainCategory.repo';
+import subCategoryRepo from '../category/subCategory.repo';
 
 class BillsRepo extends BaseRepo<Bill> {
   constructor() {
@@ -121,6 +122,13 @@ class BillsRepo extends BaseRepo<Bill> {
     const billsData = await knessetApiService.getBills();
     const arrangedBills = await this.arrangeBills(billsData);
     const updatedBills = await this.updateMany(arrangedBills, { upsert: true });
+    const toPromise = [];
+    for (const bill of updatedBills) {
+      for (const initiator of bill.initiators) {
+        toPromise.push(personRepo.findAndUpdate({ _id: initiator }, { $addToSet: { bills: bill._id } }));
+      }
+    }
+    await Promise.all(toPromise);
     return updatedBills.map(this.mapUpsert);
   }
 
@@ -248,22 +256,25 @@ class BillsRepo extends BaseRepo<Bill> {
       if (billData['re-categorize']) {
         categoryText = billData['re-categorize'];
       }
-      const categoriesToSet = [];
+      const mainCategoriesToSet = [];
+      const subCategoriesToSet = [];
       const categories = categoryText.split(',').map((category: string) => category.trim());
 
       for (const category of categories) {
-        const categoryObj = await categoryRepo.findOrCreate({ name: category, isMainCategory: true });
-        categoriesToSet.push(categoryObj.doc._id);
+        const categoryObj = await mainCategoryRepo.findOrCreate({ name: category, isMainCategory: true });
+        mainCategoriesToSet.push(categoryObj.doc._id);
       };
       const subCategoriesText = billData.subCategory;
       if (subCategoriesText) {
         const subCategories = subCategoriesText.split(',').map((category: string) => category.trim());
         for (const subCategory of subCategories) {
-          const categoryObj = await categoryRepo.findOrCreate({ name: subCategory, isMainCategory: false });
-          categoriesToSet.push(categoryObj.doc._id);
+          const categoryObj = await subCategoryRepo.findOrCreate({ name: subCategory, isMainCategory: false });
+          subCategoriesToSet.push(categoryObj.doc._id);
         };
       }
-      toPromise.push(this.model.findOneAndUpdate({ _id: bill._id }, { categories: categoriesToSet }));
+      toPromise.push(this.model.findOneAndUpdate({ _id: bill._id },
+        { mainCategories: mainCategoriesToSet, subCategories: subCategoriesToSet })
+      );
       billNumber++;
     }
     await Promise.all(toPromise);

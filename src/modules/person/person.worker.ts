@@ -21,6 +21,15 @@ class PersonWorker {
       );
     }
   }
+
+  async updatePeopleFulName() {
+    const people = await personRepo.find({});
+    const toPromise = people.map(async (person) => {
+      const fullName = `${ person.firstNameHeb } ${ person.lastNameHeb }`;
+      return personRepo.update({ _id: person._id }, { fullName });
+    });
+    await Promise.all(toPromise);
+  }
 }
 
 export default new PersonWorker();

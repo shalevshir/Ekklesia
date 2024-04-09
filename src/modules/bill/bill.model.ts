@@ -1,7 +1,8 @@
 import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose';
 import { Person } from '../person/person.model';
 import { Committee } from '../committee/committee.model';
-import { Category } from '../category/category.model';
+import { MainCategory } from '../category/mainCategory.model';
+import { SubCategory } from '../category/subCategory.model';
 
 export enum Vote {
   FOR = 'for',
@@ -121,11 +122,14 @@ export class Bill {
   @prop({ type: [ StageSchema ] })
     stages?: StageSchema[];
 
-  @prop({ ref: Array<Category> })
-    categories?: Ref<Category>[];
+    @prop({ ref: MainCategory })
+      mainCategories?: Ref<MainCategory>[];
 
-  @prop({ type: String })
-    documentLink?: string;
+    @prop({ ref: SubCategory })
+      subCategories?: Ref<SubCategory>[];
+
+    @prop({ type: String })
+      documentLink?: string;
 
   @prop({ type: [ Number ] })
     vector?: number[];

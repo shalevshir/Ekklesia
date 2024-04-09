@@ -122,12 +122,19 @@ class KnessetService {
 
   async getQueries() {
     const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.QUERY);
-    logger.info('Fetching queries', { lastRunDate });
-    const { data } = await this.axiosInstanceV4.get(
-      `${ this.databaseV4.parliament }/KNS_Query?$expand=KNS_GovMinistry&$filter=KnessetNum eq 25` +
-        (lastRunDate ? ` and LastUpdatedDate gt ${ lastRunDate }` : '')
+    logger.info({ message: 'Fetching queries, last run:' + lastRunDate, lastRunDate });
+    const url =
+    // `${ this.databaseV4.parliament }/KNS_Query?$expand=KNS_GovMinistry&$filter=KnessetNum eq 25` +
+    //   (lastRunDate ? ` and LastUpdatedDate gt ${ lastRunDate }` : '');
+
+      'ParliamentInfo/KNS_Query?$expand=KNS_GovMinistry&$filter=KnessetNum eq 25';
+    logger.info({ message: 'Fetching queries, url:' + url });
+    const res = await this.axiosInstanceV4.get(
+      url
     );
-    return data.value;
+    logger.log({ level: 'info', message: 'Fetching queries, res:', res });
+    console.log({ level: 'info', message: 'Fetching queries, res:', res });
+    return res.data?.value;
   }
 
   async getQueriesDocuments(queryId: number) {
