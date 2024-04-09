@@ -1,9 +1,9 @@
 import BaseRepo from '../../abstracts/repo.abstract';
-import CategoryModel, { Category } from './category.model';
+import MainCategoryModel, { MainCategory } from './mainCategory.model';
 
-class CategoryRepo extends BaseRepo<Category> {
+class CategoryRepo extends BaseRepo<MainCategory> {
   constructor() {
-    super(CategoryModel);
+    super(MainCategoryModel);
   }
 
   async getAllCategories() {
