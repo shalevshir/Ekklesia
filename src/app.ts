@@ -9,6 +9,7 @@ import express from 'express';
 import { getFileAsHtml } from './utils/files.service';
 import { handleError } from './utils/errors.utils';
 import { envVars } from './utils/envVars';
+import knessetApiService from './utils/knesset-api.service';
 
 connectDB();
 
@@ -31,6 +32,7 @@ app.get('/', (req, res) => {
 
 app.use('/query', queryRouter);
 app.use('/category', categoriesRouter);
+app.get('/bills', knessetApiService.getBills);
 
 // app.get("/fetchMks", routers.fetchMks);
 // app.get("/fetchCommittees", routers.fetchCommittees);
