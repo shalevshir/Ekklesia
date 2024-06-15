@@ -32,7 +32,12 @@ app.get('/', (req, res) => {
 
 app.use('/query', queryRouter);
 app.use('/category', categoriesRouter);
-app.get('/bills', knessetApiService.getBills);
+app.get('/bills', (req, res) => {
+  knessetApiService.getBills().then((bills) => {
+    res.send(bills);
+  }
+  );
+});
 
 // app.get("/fetchMks", routers.fetchMks);
 // app.get("/fetchCommittees", routers.fetchCommittees);
