@@ -9,7 +9,9 @@ enum EnvVarEnum {
   DB_NAME = 'DB_NAME',
   DB_PASSWORD = 'DB_PASSWORD',
   HUGGINGFACEHUB_API_KEY = 'HUGGINGFACEHUB_API_KEY',
-  LOGTAIL_KEY = 'LOGTAIL_KEY'
+  LOGTAIL_KEY = 'LOGTAIL_KEY',
+  AIRTABLE_API_KEY = 'AIRTABLE_API_KEY',
+  AIRTABLE_BASE_ID = 'AIRTABLE_BASE_ID',
 }
 
 // Load environment variables in non-production environments
