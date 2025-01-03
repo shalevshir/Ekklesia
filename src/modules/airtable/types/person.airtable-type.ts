@@ -1,5 +1,6 @@
+import { Ministry } from './../../ministry/ministry.model';
 import { AirtableRecord } from './airtableRecord';
-import { IsString, IsArray, IsNumber } from 'class-validator';
+import { IsString, IsArray, IsNumber, IsOptional } from 'class-validator';
 
 export class PersonRecord extends AirtableRecord {
 
@@ -28,6 +29,9 @@ export class PersonRecord extends AirtableRecord {
   @IsString({ each: true })
   CommitteeSessions!: string[];
 
+  @IsString({ each: true })
+  Ministry!: string[];
+
   @IsArray()
   @IsString({ each: true })
   Bills!: string[];
@@ -39,9 +43,8 @@ export class PersonRecord extends AirtableRecord {
   @IsString()
   Name!: string;
 
-  @IsArray()
-  @IsString({ each: true })
-  block!: string[];
+  @IsString()
+  block!: string;
 
   @IsNumber()
   numberOfBills!: number;

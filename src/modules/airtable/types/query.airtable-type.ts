@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsDate, IsOptional, IsObject } from 'class-validator';
+import { IsString, IsArray, IsDate, IsOptional, IsObject, IsNumber } from 'class-validator';
 import { AirtableRecord } from './airtableRecord';
 
 export class QueryRecord extends AirtableRecord {
@@ -56,4 +56,10 @@ export class QueryRecord extends AirtableRecord {
   @IsArray()
   @IsString({ each: true })
   categories!: string[];
+
+  @IsDate()
+  replyDate!: Date;
+
+  @IsString()
+  replyLink!: string;
 }

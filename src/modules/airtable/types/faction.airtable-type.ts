@@ -18,8 +18,4 @@ export class FactionRecord extends AirtableRecord {
   @IsArray()
   @IsString({ each: true })
   bills!: string[];
-
-  @IsArray()
-  @IsString({ each: true })
-  members!: string[];
 }

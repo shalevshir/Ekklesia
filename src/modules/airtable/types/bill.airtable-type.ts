@@ -1,5 +1,5 @@
-import { IsString, IsArray, IsDate, IsNumber, IsObject } from 'class-validator';
-import { CommitteeRecord } from '../../../types/committee.airtable-type';
+import { IsString, IsArray, IsDate, IsNumber, IsObject, IsBoolean } from 'class-validator';
+import { CommitteeRecord } from './committee.airtable-type';
 import { AirtableRecord } from './airtableRecord';
 
 export class BillRecord extends AirtableRecord {
@@ -67,4 +67,23 @@ export class BillRecord extends AirtableRecord {
 
   @IsDate()
   'Last Modified summary'!: Date;
+
+  @IsArray()
+  @IsString({ each: true })
+  initiators!: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  'block (from initiators)'!: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  faction!: string[];
+
+  @IsString()
+  pNumber!: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  tags!: string[];
 }

@@ -25,10 +25,17 @@ export class CommitteeSessionRecord extends AirtableRecord {
   @IsString()
   transcriptUrl!: string;
 
-  @IsArray()
-  @IsString({ each: true })
-  committee!: string[];
+  @IsString()
+  committee!: string;
+
+  @IsNumber()
+  totalNumberOfSessions!: number;
 
   @IsArray()
-  totalNumberOfSessions!: number[];
+  @IsString({ each: true })
+  bills!: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  attendees!: string[];
 }
