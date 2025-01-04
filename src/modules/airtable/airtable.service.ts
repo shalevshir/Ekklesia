@@ -21,17 +21,18 @@ class AirtableService {
 
   getTableInstance<T extends FieldSet>(tableName: TableNames) {
     return new AirtableTable<T>(this.base(tableName));
-
   }
 
-  async fetchExampleRecord(tableName: string) {
+  async getTableFields(tableName: string) {
     const table = this.base(tableName);
-    const records = await table.select({ maxRecords: 1 }).firstPage();
-    if (records.length > 0) {
-      console.log('Example Record:', records[0].fields);
-    } else {
-      console.log('No records found in table:', tableName);
-    }
+    const records = await table.select({ maxRecords: 20 }).firstPage();
+    const fields = new Set<string>();
+    records.forEach(record => {
+      Object.keys(record.fields).forEach(field => {
+        fields.add(field);
+      });
+    });
+    return Array.from(fields);
   }
 }
 
@@ -46,8 +47,19 @@ class AirtableTable<T extends FieldSet> {
     return this.table.create(record);
   }
 
-  async read(filter: airtable.SelectOptions<T> = {}) {
-    return this.table.select(filter).all();
+  async fetch(filter: airtable.SelectOptions<T> = {}, populate?: { field: string, table: TableNames }) {
+    const records = await this.table.select(filter).all();
+    if (populate) {
+      const relatedTable = new AirtableTable<T>(this.table.base(populate.table));
+      for (const record of records) {
+        const relatedRecordId = record.fields[populate.field] as string;
+        if (relatedRecordId) {
+          const relatedRecords = await relatedTable.fetch({ filterByFormula: `{id} = '${relatedRecordId}'` });
+          (record.fields as any)[populate.field] = relatedRecords[0];
+        }
+      }
+    }
+    return records;
   }
 
   async update(id: string, fields: Partial<T>) {
