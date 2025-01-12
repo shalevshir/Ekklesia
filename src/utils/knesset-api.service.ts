@@ -120,20 +120,15 @@ class KnessetService {
     return data.value;
   }
 
-  async getQueries() {
+  async getQueries(limit = 100, skip = 0) {
     const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.QUERY);
     logger.info({ message: 'Fetching queries, last run:' + lastRunDate, lastRunDate });
     const url =
-    // `${ this.databaseV4.parliament }/KNS_Query?$expand=KNS_GovMinistry&$filter=KnessetNum eq 25` +
-    //   (lastRunDate ? ` and LastUpdatedDate gt ${ lastRunDate }` : '');
-
-      'ParliamentInfo/KNS_Query?$expand=KNS_GovMinistry&$filter=KnessetNum eq 25';
+      'ParliamentInfo/KNS_Query?$expand=KNS_GovMinistry&$filter=KnessetNum eq 25' +
+      (lastRunDate ? ` and LastUpdatedDate gt ${ lastRunDate }` : '') +
+      `&$top=${limit}&$skip=${skip}` 
     logger.info({ message: 'Fetching queries, url:' + url });
-    const res = await this.axiosInstanceV4.get(
-      url
-    );
-    logger.log({ level: 'info', message: 'Fetching queries, res:', res });
-    console.log({ level: 'info', message: 'Fetching queries, res:', res });
+    const res = await this.axiosInstanceV4.get(url);
     return res.data?.value;
   }
 
@@ -165,7 +160,7 @@ class KnessetService {
       );
       const getLatest = (data: any): any => {
         const first = _.first(data) as any;
-        if (first?.GroupTypeID !== 17 || first?.GroupTypeID) return first;
+        if (![17, 59].includes(first?.GroupTypeID) || first?.GroupTypeID) return first;
 
         // remove government decisions documents
         return getLatest(data.slice(1));
@@ -184,6 +179,13 @@ class KnessetService {
       await wait(0.7);
     }
     return updateData;
+  }
+
+  async getCommitteeSessionsBill(sessionId: number) {
+    const { data } = await this.axiosInstance.get(
+      `${ this.dataBases.parliament }/KNS_CmtSessionItem()?$filter=CommitteeSessionID eq ${ sessionId } and ItemTypeID eq 2`
+    );
+    return data?.value;
   }
 }
 
