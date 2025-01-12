@@ -20,15 +20,26 @@ class QueryRepo extends BaseRepo<Query> {
     super(QueryModel);
   }
   async fetchQueriesFromKnesset() {
-    const queriesData = await knessetApiService.getQueries();
-    if (!queriesData?.length) {
+    let allArrangedQueries:any[] = [];
+    const pageSize = 100;
+    let skip = 0;
+    let queriesData;
+    do {
+      queriesData = await knessetApiService.getQueries(pageSize, skip);
+      if (queriesData?.length) {
+        const arrangedQueries = await this.arrangeQueries(queriesData);
+        allArrangedQueries = allArrangedQueries.concat(arrangedQueries);
+        skip += 100;
+      }
+    } while (queriesData?.length === 100);
+
+    if (!allArrangedQueries.length) {
       logger.info('No queries found');
       return [];
     }
-    logger.info({ message: `fetched ${ queriesData.length } queries from knesset` });
-    const arrangedQueries = await this.arrangeQueries(queriesData);
-    const data = await this.updateMany(arrangedQueries, { upsert: true });
-    const toPromise = data.map((query) => {
+    logger.info({ message: `fetched and arranged ${ allArrangedQueries.length } queries from knesset` });
+    const data = await this.updateMany(allArrangedQueries, { upsert: true });
+    const toPromise = allArrangedQueries.map((query) => {
       return personRepo.findAndUpdate({ _id: query.submitter }, { $addToSet: { queries: query._id } });
     });
     await Promise.all(toPromise);
