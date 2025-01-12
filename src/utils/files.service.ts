@@ -5,6 +5,9 @@ import path from 'path';
 import logger from './logger';
 import mammoth from 'mammoth';
 import pdf from 'pdf-parse';
+import { DocxLoader } from '@langchain/community/document_loaders/fs/docx';
+import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
+import { Document } from '@langchain/core/documents';
 
 async function getFileAsHtml(url: string): Promise<string> {
   const response = await downloadAndSaveFile(url);
@@ -32,6 +35,27 @@ async function getFileAsText(url: string): Promise<string | undefined> {
     }
   });
   return data;
+}
+
+async function getFileAsDocument(link:string):Promise<Document[]>{
+  const file = await downloadAndSaveFile(link as string);
+  const blob = await fs.openAsBlob(file);
+  let docLoader
+  if (file.endsWith('.docx') || file.endsWith('.doc')) {
+    docLoader = new DocxLoader(blob);
+  }else{
+    docLoader = new PDFLoader(blob);
+  } 
+  
+  const doc = await docLoader.load()
+  return doc ? cleanDocText(doc) : [];
+}
+
+function cleanDocText(doc:Document[]): Document[] {
+  return doc.map(d => {
+    d.pageContent = d.pageContent.replace(/(\r\n|\n|\r)/gm, " ");
+    return d;
+  });
 }
 
 async function extractTextFromDocx(filePath: string): Promise<string> {
@@ -85,4 +109,4 @@ async function readCsv(filePath: string): Promise<any[]> {
       });
   });
 }
-export { downloadAndSaveFile, getFileAsHtml, getFileAsText, readCsv };
+export { getFileAsDocument, downloadAndSaveFile, getFileAsHtml, getFileAsText, readCsv };
