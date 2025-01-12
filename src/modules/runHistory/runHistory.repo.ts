@@ -58,6 +58,11 @@ class RunHistoryRepo extends BaseRepo<RunHistory> {
     }
     return lastRun.startTime.toISOString();
   }
+
+  async isTaskRunning(type: Entities, entityId?: ObjectId): Promise<boolean> {
+    const run = await RunHistoryModel.findOne({ entityId, type, status: RunStatuses.PENDING });
+    return run ? true : false;
+  }
 }
 
 export default new RunHistoryRepo();

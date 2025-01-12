@@ -27,8 +27,13 @@ class CommitteeSessionWorker {
 
   async fetchCommitteesSessions(job: Job, done: DoneCallback) {
     const committeeId = job.data?.committeeId;
+    const isTaskRunning = await runHistoryRepo.isTaskRunning(Entities.COMMITTEE_SESSION, committeeId );
+    if (isTaskRunning) {
+      logger.info('Task is already running', { committeeId, jobId: job.id });
+      return
+    }
     const run = await runHistoryRepo.initiateRunHistory(Entities.COMMITTEE_SESSION, committeeId);
-    try {
+    try { 
       const committee = await committeeRepo.model.findById(committeeId) as DocumentType<Committee>;
       logger.info({ message: 'Fetch committees sessions process started', jobId: job.id, committeeId: committeeId });
       const data = await committeeSessionRepo.fetchCommitteesSessions(committee, run?.entityId);
