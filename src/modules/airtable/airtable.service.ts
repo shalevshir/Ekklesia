@@ -50,7 +50,7 @@ class AirtableTable<T extends FieldSet> {
   async fetch(filter: airtable.SelectOptions<T> = {}, populate?: { field: string, table: TableNames }) {
     const records = await this.table.select(filter).all();
     if (populate) {
-      const relatedTable = new AirtableTable<T>(this.table.base(populate.table));
+      const relatedTable = airtableService.getTableInstance(populate.table);
       for (const record of records) {
         const relatedRecordId = record.fields[populate.field] as string;
         if (relatedRecordId) {
