@@ -1,7 +1,6 @@
 import { ChatOpenAI } from '@langchain/openai';
-import {GoogleVertexAI} from '@langchain/community/llms/googlevertexai';
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
+// import {GoogleVertexAI} from '@langchain/community/llms/googlevertexai';
+// import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 export const gpt35Turbo = new ChatOpenAI({
   model: 'gpt-3.5-turbo',
   temperature: 0
@@ -17,14 +16,14 @@ export const gpt4oMini = new ChatOpenAI({
   temperature: 0.5
 });
 
-export const gemini1_5 = new ChatGoogleGenerativeAI({
-  model: 'gemini-1.5-pro',
-  temperature: 0,
-  maxRetries: 3
-});
+// export const gemini1_5 = new ChatGoogleGenerativeAI({
+//   model: 'gemini-1.5-pro',
+//   temperature: 0,
+//   maxRetries: 3
+// });
 
 
-export const gemini1_5_flash = new ChatGoogleGenerativeAI({
-  model: 'gemini-1.5-flash',
-  temperature: 0,
-});
+// export const gemini1_5_flash = new ChatGoogleGenerativeAI({
+//   model: 'gemini-1.5-flash',
+//   temperature: 0,
+// });
