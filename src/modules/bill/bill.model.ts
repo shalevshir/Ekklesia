@@ -3,6 +3,8 @@ import { Person } from '../person/person.model';
 import { Committee } from '../committee/committee.model';
 import { MainCategory } from '../category/mainCategory.model';
 import { SubCategory } from '../category/subCategory.model';
+import { IsArray } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export enum Vote {
   FOR = 'for',
@@ -75,6 +77,17 @@ export class StageSchema {
     result?: string;
 }
 
+export class BillDocument {
+  @prop()
+    url!: string;
+
+  @prop()
+    updatedDate!: Date;
+
+  @prop()
+    type!: string;
+}
+
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class Bill {
   @prop({ required: true, unique: true, type: Number })
@@ -99,7 +112,9 @@ export class Bill {
     topic?: string;
 
   @prop()
-    billLink?: string;
+  @IsArray()
+  @Type(() => BillDocument)
+    billDocuments?: BillDocument[];
 
   @prop({ enum: BillTypes })
     type?: BillTypes;
@@ -122,14 +137,12 @@ export class Bill {
   @prop({ type: [ StageSchema ] })
     stages?: StageSchema[];
 
-    @prop({ ref: MainCategory })
-      mainCategories?: Ref<MainCategory>[];
+  @prop({ ref: MainCategory })
+    mainCategories?: Ref<MainCategory>[];
 
-    @prop({ ref: SubCategory })
-      subCategories?: Ref<SubCategory>[];
+  @prop({ ref: SubCategory })
+    subCategories?: Ref<SubCategory>[];
 
-    @prop({ type: String })
-      documentLink?: string;
 
   @prop({ type: [ Number ] })
     vector?: number[];

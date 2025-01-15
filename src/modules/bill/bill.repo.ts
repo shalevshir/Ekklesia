@@ -14,6 +14,7 @@ import path from 'path';
 import mainCategoryRepo from '../category/mainCategory.repo';
 import subCategoryRepo from '../category/subCategory.repo';
 
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 class BillsRepo extends BaseRepo<Bill> {
   constructor() {
     super(BillModel);
@@ -175,13 +176,20 @@ class BillsRepo extends BaseRepo<Bill> {
   }
 
   async updateBillsDocumentsLinks() {
-    const bills = await this.model.find({ categories: { $ne: null } }).lean();
-    const billsIds: number[] = bills.map((bill: any) => bill.originId) as number[];
-    const billsData = await knessetApiService.getBillsLinks(billsIds);
-    if (!billsData) {
-      throw new Error('No bills found');
+    const bills = await this.model.find({  }).lean();
+    const chunkSize = 200;
+    const chunks = _.chunk(bills, chunkSize);
+    const data = []
+    for(let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i];
+      logger.info(`Getting bills links - Chunk ${ i + 1 } out of ${ chunks.length }`);
+      const billsData = await knessetApiService.getBillsLinks(chunk);
+      if (!billsData) {
+        throw new Error('No bills found');
+      }
+      data.push(await this.updateMany(billsData, { upsert: true }));
+      await wait(1000);
     }
-    const data = await this.updateMany(billsData, { upsert: true });
     return data.map(this.mapUpsert);
   }
 
@@ -245,7 +253,7 @@ class BillsRepo extends BaseRepo<Bill> {
     let billNumber = 1;
     const toPromise = [];
     for (const bill of bills) {
-      logger.info({ message: `Updating bill #${ billNumber } out of ${ bills.length }`, billId: bill._id });
+      logger.info({ message: `Updating bill #${ billNumber } out of ${ bills.length }` , billId: bill._id });
       const billData = data.find((data) => +data.originId === +bill.originId);
       if (!billData) {
         logger.info(`No categories found for bill #${ billNumber } out of ${ bills.length }`, { billId: bill._id });
@@ -276,32 +284,6 @@ class BillsRepo extends BaseRepo<Bill> {
         { mainCategories: mainCategoriesToSet, subCategories: subCategoriesToSet })
       );
       billNumber++;
-    }
-    await Promise.all(toPromise);
-  }
-
-  async embedBills() {
-    const bills = await this.model.find<DocumentType<Bill>>({ categories: { $ne: null } }).lean();
-    logger.info({ message: `Embedding ${ bills.length } bills ` });
-    let billNumber = 1;
-    const toPromise = [];
-    for (const bill of bills) {
-      logger.info({ message: `Embedding bill #${ billNumber } out of ${ bills.length }`, billId: bill._id });
-      let query = '';
-      if (bill.billLink) {
-        const textData = await getFileAsText(bill.billLink);
-        if (textData) {
-          query = textData;
-        }
-      } else {
-        query = bill.name;
-        if (bill.summary) {
-          query += ` ${ bill.summary }`;
-        }
-      }
-      const embeddedData = await embeddingService.embedData(query);
-      toPromise.push(this.model.findOneAndUpdate({ _id: bill._id }, { vector: embeddedData }));
-      logger.info({ message: `Embedding bill #${ billNumber++ } completed`, billId: bill._id });
     }
     await Promise.all(toPromise);
   }
