@@ -102,7 +102,8 @@ class PersonRepo extends BaseRepo<Person> {
       faction: mk.faction,
       roles: this.mapRoles(mk.roles),
       committees: Array.from(mk.committees),
-      minister: mk.minister ? mk.minister : []
+      minister: mk.minister ? mk.minister : [],
+      knessetNum: 25
     } as Person));
   }
 

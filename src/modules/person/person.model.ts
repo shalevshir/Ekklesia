@@ -108,6 +108,9 @@ export class Person {
 
   @prop({ type: [ CommitteeSessionSchema ] })
     committeeSessions?: CommitteeSessionSchema[];
+
+  @prop()
+    knessetNum!: number;
 }
 
 
