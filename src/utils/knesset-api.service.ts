@@ -4,6 +4,7 @@ import _ from 'lodash';
 import logger from './logger';
 import runHistoryRepo from '../modules/runHistory/runHistory.repo';
 import { Entities } from '../types/entities.enum';
+import { Bill, BillDocument } from '../modules/bill/bill.model';
 
 function wait(seconds: number) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
@@ -149,32 +150,36 @@ class KnessetService {
     return this.accumulateData(data);
   }
 
-  async getBillsLinks(billsIds: number[]) {
+  async getBillsLinks(bills: Bill[]) {
     const updateData = [];
-    logger.info(`Getting bills links for ${ billsIds.length } bills`);
+    logger.info(`Getting bills links for ${ bills.length } bills`);
     let billNumber = 1;
-    for await (const billId of billsIds) {
-      logger.info(`Getting bill #${ billNumber } out of ${ billsIds.length }`, billId);
-      const { data } = await this.axiosInstance.get(
-        `${ this.dataBases.parliament }/KNS_DocumentBill?$filter=BillID eq ${ billId }&$orderby=LastUpdatedDate desc`
+    for (const bill of bills) {
+      const billId = bill.originId;
+      logger.info(`Getting bill #${ billNumber } out of ${ bills.length }`, { billId });
+
+      const billLatestDocument = bill.billDocuments?.sort((a, b) => new Date(b.updatedDate).getTime() - new Date(a.updatedDate).getTime())[0];
+      
+      const { data } = await this.axiosInstanceV4.get(
+        `${this.databaseV4.parliament}/KNS_DocumentBill?$filter=BillID eq ${billId}`+
+        (billLatestDocument ? ` and LastUpdatedDate gt ${new Date(billLatestDocument.updatedDate).toISOString()}` : '')
       );
-      const getLatest = (data: any): any => {
-        const first = _.first(data) as any;
-        if (![17, 59].includes(first?.GroupTypeID) || first?.GroupTypeID) return first;
-
-        // remove government decisions documents
-        return getLatest(data.slice(1));
-      };
-
-      const latest = getLatest(data.value);
-      if (latest) {
+      if(data?.value?.length){
+        const docsList =[]
+        for (const doc of data.value) {
+          docsList.push({
+            type: doc.GroupTypeDesc,
+            url: doc.FilePath,
+            updatedDate: doc.LastUpdatedDate
+          } as BillDocument);
+        }
         updateData.push({
           originId: billId,
-          billLink: latest.FilePath
+          billDocuments: docsList
         });
-        logger.info(`Got bill #${ billNumber++ } out of ${ billsIds.length }`, billId);
+        logger.info(`Finished getting bill #${ billNumber++ } out of ${ bills.length }`, { billId });
       } else {
-        logger.info(`No document for bill #${ billNumber++ } out of ${ billsIds.length }`, billId);
+        logger.info(`No document for bill #${ billNumber++ } out of ${ bills.length }`, billId);
       }
       await wait(0.7);
     }
@@ -186,6 +191,26 @@ class KnessetService {
       `${ this.dataBases.parliament }/KNS_CmtSessionItem()?$filter=CommitteeSessionID eq ${ sessionId } and ItemTypeID eq 2`
     );
     return data?.value;
+  }
+
+  async getAgendas() {
+    const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.AGENDA);
+    logger.info('Fetching agendas', { lastRunDate });
+    const { data } = await this.axiosInstanceV4.get(
+      `${ this.databaseV4.parliament }/KNS_Agenda?$filter=KnessetNum eq 25` +
+        (lastRunDate ? ` and LastUpdatedDate gt datetime'${ lastRunDate }'` : '') +
+        '&$expand=KNS_Status'
+    );
+    return this.accumulateData(data);
+  }
+
+  async getAgendasDocuments(agendaId: number) {
+    logger.info('Fetching agendas documents',{  agendaId });
+    const { data } = await this.axiosInstanceV4.get(
+      `${ this.databaseV4.parliament }/KNS_DocumentAgenda?$filter=AgendaID eq ${ agendaId }`
+    );
+
+    return this.accumulateData(data);
   }
 }
 
