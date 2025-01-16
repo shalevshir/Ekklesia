@@ -73,7 +73,10 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
     let sessionNumber = 1;
     for (const session of committeesSessions) {
       logger.info(`Arranging session #${ sessionNumber++ } out of ${ committeesSessions.length }`,
-        { sessionOriginId: session.CommitteeSessionID }
+        { 
+          sessionOriginId: session.CommitteeSessionID,
+          committee: committee.name
+        }
       );
       const mappedSession: Partial<CommitteeSession> = {};
       const transcript = await this.getTranscriptUrl(session.CommitteeSessionID);

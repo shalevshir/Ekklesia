@@ -8,15 +8,20 @@ import queueService from '../../utils/queue.service';
 import { DocumentType } from '@typegoose/typegoose';
 import { Committee } from '../committee/committee.model';
 
+const wait = (sec: number) => new Promise(resolve => setTimeout(resolve, sec * 1000));
 class CommitteeSessionWorker {
   async runFetchSessionsTask(job: Job, done: DoneCallback) {
     try {
       logger.info({ message: 'Run fetch sessions job', jobId: job.id });
       done();
-      const committees = await committeeRepo.find({});
+      const todaysRuns = await runHistoryRepo.getTodayRuns(Entities.COMMITTEE_SESSION);
+      const committeesToExclude = todaysRuns.map(run => run.entityId);
+      const committees = await committeeRepo.find({_id: { $nin: committeesToExclude }});
+      
       for (const committee of committees) {
         logger.info({ message: 'Running fetching committee sessions', committeeId: committee._id });
         queueService.add('updateCommittee', { committeeId: committee._id });
+        await wait(120);
       }
       logger.info('Fetching committees sessions process finished');
       return true;
