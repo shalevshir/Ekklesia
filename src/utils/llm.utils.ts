@@ -3,9 +3,7 @@ import {
   ChatPromptTemplate,
   MessagesPlaceholder
 } from '@langchain/core/prompts';
-import { ChatOpenAI } from '@langchain/openai';
 import { Runnable } from '@langchain/core/runnables';
-import { BaseChatGoogleVertexAI } from '@langchain/community/dist/chat_models/googlevertexai/common';
 
 export async function createAgent(
   llm: any,

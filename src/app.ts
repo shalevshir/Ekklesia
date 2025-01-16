@@ -1,9 +1,6 @@
 import cors from 'cors';
 import { connectDB } from './utils/db';
 
-import categoriesRouter from './modules/category/category.router';
-import queryRouter from './modules/query/query.routers';
-
 import logger from './utils/logger';
 import express from 'express';
 import { getFileAsHtml } from './utils/files.service';
@@ -29,8 +26,8 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 });
 
-app.use('/query', queryRouter);
-app.use('/category', categoriesRouter);
+// app.use('/query', queryRouter);
+// app.use('/category', categoriesRouter);
 
 // app.get("/fetchMks", routers.fetchMks);
 // app.get("/fetchCommittees", routers.fetchCommittees);
