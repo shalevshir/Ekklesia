@@ -6,16 +6,16 @@ import committeeSessionWorker from './modules/committeeSession/committeeSession.
 import personWorker from './modules/person/person.worker';
 import committeeWorker from './modules/committee/committee.worker';
 import queueService from './utils/queue.service';
+import agendaWorker from './modules/agenda/agenda.worker';
 
 const startWorker = async () => {
   await connectDB();
-
   // Person
   queueService.process('fetchPeople', personWorker.fetchPeople);
 
   // Committee
   queueService.process('fetchCommittees', committeeWorker.fetchCommitteesFromKnessetApi);
-  // queueService.process('updateCommitteesMembers', committeeWorker.updateCommitteesMembers);
+  queueService.process('updateCommitteesMembers', committeeWorker.updateCommitteesMembers);
 
   // Query
   queueService.process('fetchQueries', queryWorker.fetchQueries);
@@ -29,6 +29,9 @@ const startWorker = async () => {
   // CommitteeSession
   queueService.process('updateCommitteeSessions', committeeSessionWorker.runFetchSessionsTask);
   queueService.process('updateCommittee', committeeSessionWorker.fetchCommitteesSessions);
+
+  // Agenda
+  queueService.process('fetchAgendas', agendaWorker.fetchAgendas);
 
   queueService.process('keepAwake', async () => {
     logger.info('Worker is awake');

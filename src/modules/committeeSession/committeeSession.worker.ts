@@ -14,9 +14,9 @@ class CommitteeSessionWorker {
     try {
       logger.info({ message: 'Run fetch sessions job', jobId: job.id });
       done();
-      const todaysRuns = await runHistoryRepo.getTodayRuns(Entities.COMMITTEE_SESSION);
-      const committeesToExclude = todaysRuns.map(run => run.entityId);
-      const committees = await committeeRepo.find({_id: { $nin: committeesToExclude }});
+      // const todaysRuns = await runHistoryRepo.getTodayRuns(Entities.COMMITTEE_SESSION);
+      // const committeesToExclude = todaysRuns.map(run => run.entityId);
+      const committees = await committeeRepo.find({});
       
       for (const committee of committees) {
         logger.info({ message: 'Running fetching committee sessions', committeeId: committee._id });
