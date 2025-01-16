@@ -24,8 +24,9 @@ export class Agenda {
   @IsString()
     classificationDesc!: string;
 
-  @prop({ref: 'Agenda'})
+  @prop({ref: 'Agenda', foreignField: 'originId', localField: 'leadingAgenda'})
   @IsOptional()
+  @Type(() => Agenda)
     leadingAgenda!: Ref<Agenda>;
 
   @prop()
@@ -46,6 +47,7 @@ export class Agenda {
     status!: string;
 
   @prop({ref: 'Person'})
+  @Type(() => Person)
     initiator!: Ref<Person>;
 
   @prop()

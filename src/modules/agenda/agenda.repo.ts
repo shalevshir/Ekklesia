@@ -1,5 +1,6 @@
 import BaseRepo from '../../abstracts/repo.abstract';
 import knessetApiService from '../../utils/knesset-api.service';
+import logger from '../../utils/logger';
 import committeeRepo from '../committee/committee.repo';
 import personRepo from '../person/person.repo';
 import AgendaModel, { Agenda } from './agenda.model';
@@ -23,13 +24,17 @@ class AgendaRepo extends BaseRepo<Agenda> {
 
   async arrangeAgendas(agendasList: any[]): Promise<Agenda[]> {
     const agendas = [];
+    let agendaNum = 1;
     for(const agenda of agendasList) {
-      const committee = await committeeRepo.findOne({ originId: agenda.CommitteeID });
+      const agendaId = agenda.AgendaID || agenda.Id;
+      logger.info(`Fetching agenda #${++agendaNum} out of ${agendasList.length}`, { agendaId });
+      const committeeOriginId = agenda.CommitteeID || agenda.RecommendCommitteeID
+      const committee = await committeeRepo.findOne({ originId:  committeeOriginId});
       const initiator = await personRepo.findOne({ originId: agenda.InitiatorPersonID });
       const minister = await personRepo.findOne({ originId: agenda.MinisterPersonID });
-      const agendaDocuments = await knessetApiService.getAgendasDocuments(agenda.AgendaID);
+      const agendaDocuments = await knessetApiService.getAgendasDocuments(agendaId);
       agendas.push({
-        originId: agenda.AgendaID?? agenda.Id,
+        originId: agendaId,
         name: agenda.name,
         classificationDesc: agenda.classificationDesc,
         committee: committee?._id,
