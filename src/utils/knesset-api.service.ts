@@ -37,7 +37,7 @@ class KnessetService {
   async getMks(): Promise<any[] | undefined> {
     const lastRunDate = await runHistoryRepo.getLatestRunDate(Entities.PERSON);
     const { data } = await this.axiosInstance.get(
-      `${ this.baseKnessetUrlV4 }ParliamentInfo/KNS_PersonToPosition?$filter=KnessetNum eq 25` +
+      `${ this.baseKnessetUrlV4 }ParliamentInfo/KNS_PersonToPosition?$filter=KnessetNum eq 25 and IsCurrent eq true` +
         (lastRunDate ? ` and LastUpdatedDate gt ${ lastRunDate }` : '') +
         '&$expand=KNS_Person'
     );
