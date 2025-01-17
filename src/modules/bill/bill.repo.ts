@@ -130,20 +130,20 @@ class BillsRepo extends BaseRepo<Bill> {
       updatedBills.push(...updated.map(bill=>{
           return {
             _id: bill._id,
-            initiators: bill.initiators,
             createAt: bill.createdAt,
             updatedAt: bill.updatedAt
           }
         }
       ))
-    }
-    const toPromise = [];
-    for (const bill of updatedBills) {
-      for (const initiator of bill.initiators) {
-        toPromise.push(personRepo.findAndUpdate({ _id: initiator }, { $addToSet: { bills: bill._id } }));
+      const toPromise = [];
+      logger.info(`Updating initiators for ${ updated.length } bills`);
+      for (const bill of updated) {
+        for (const initiator of bill.initiators) {
+          toPromise.push(personRepo.findAndUpdate({ _id: initiator }, { $addToSet: { bills: bill._id } }));
+        }
       }
+      await Promise.all(toPromise);
     }
-    await Promise.all(toPromise);
     return updatedBills.map(this.mapUpsert);
   }
 
