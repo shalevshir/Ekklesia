@@ -198,7 +198,7 @@ class KnessetService {
     logger.info('Fetching agendas', { lastRunDate });
     const { data } = await this.axiosInstanceV4.get(
       `${ this.databaseV4.parliament }/KNS_Agenda?$filter=KnessetNum eq 25` +
-        (lastRunDate ? ` and LastUpdatedDate gt datetime'${ lastRunDate }'` : '') +
+        (lastRunDate ? ` and LastUpdatedDate gt ${ lastRunDate }` : '') +
         '&$expand=KNS_Status'
     );
     return this.accumulateData(data);

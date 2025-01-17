@@ -22,7 +22,7 @@ class AgendaRepo extends BaseRepo<Agenda> {
     const allAgendas: any[] = [];
     for (const chunk of chunks) {
       logger.info(`Fetching ${chunk.length} agendas out of ${agendasList.length}`);
-      const agendas = await this.arrangeAgendas(chunks);
+      const agendas = await this.arrangeAgendas(chunk);
       const data = await this.updateMany(agendas);
       allAgendas.push(...data);
     }
