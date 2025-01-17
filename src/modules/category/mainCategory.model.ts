@@ -1,7 +1,8 @@
-import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose';
+import { prop, getModelForClass, Ref, modelOptions, index } from '@typegoose/typegoose';
 import { SubCategory } from './subCategory.model';
 
 @modelOptions({ schemaOptions: { timestamps: true } })
+@index({ name: 1 }, { unique: true })
 export class MainCategory {
     @prop({ required: true })
       name!: string;
