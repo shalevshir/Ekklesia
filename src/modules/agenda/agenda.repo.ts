@@ -20,13 +20,18 @@ class AgendaRepo extends BaseRepo<Agenda> {
     }
     const chunks = _.chunk(agendasList, 200);
     const allAgendas: any[] = [];
+    let chunkNum = 1;
     for (const chunk of chunks) {
-      logger.info(`Fetching ${chunk.length} agendas out of ${agendasList.length}`);
+      logger.info(`Fetching agendas chunk #${chunkNum++} out of ${chunks.length}`);
       const agendas = await this.arrangeAgendas(chunk);
-      const data = await this.updateMany(agendas);
+      const data = await this.updateMany(agendas,{ upsert: true });
       allAgendas.push(...data);
     }
     const toPromise = allAgendas.map((agenda) => {
+      if(!agenda?.initiator) {
+        logger.info('No initiator found for agenda', { agendaId: agenda?.originId });
+        return Promise.resolve();
+      }
       return personRepo.findAndUpdate({ _id: agenda.initiator }, { $addToSet: { agendas: agenda._id } });
     });
     await Promise.all(toPromise);
@@ -38,7 +43,7 @@ class AgendaRepo extends BaseRepo<Agenda> {
     let agendaNum = 1;
     for(const agenda of agendasList) {
       const agendaId = agenda.AgendaID || agenda.Id;
-      logger.info(`Fetching agenda #${++agendaNum} out of ${agendasList.length}`, { agendaId });
+      logger.info(`Fetching agenda #${agendaNum++} out of ${agendasList.length}`, { agendaId });
       const committeeOriginId = agenda.CommitteeID || agenda.RecommendCommitteeID
       const committee = await committeeRepo.findOne({ originId:  committeeOriginId});
       const initiator = await personRepo.findOne({ originId: agenda.InitiatorPersonID });
