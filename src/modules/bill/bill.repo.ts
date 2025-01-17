@@ -123,8 +123,19 @@ class BillsRepo extends BaseRepo<Bill> {
     const chunks = _.chunk(billsData, 200);
     const updatedBills: any[] = [];
     for(const chunk of chunks) {
+      logger.info(`Fetching ${ chunk.length } bills out of ${ billsData.length }`);
       const arrangedBills = await this.arrangeBills(chunk);
-      updatedBills.push(...await this.updateMany(arrangedBills, { upsert: true }));
+      logger.info(`Updating ${ arrangedBills.length } bills`);
+      const updated = await this.updateMany(arrangedBills, { upsert: true });
+      updatedBills.push(...updated.map(bill=>{
+          return {
+            _id: bill._id,
+            initiators: bill.initiators,
+            createAt: bill.createdAt,
+            updatedAt: bill.updatedAt
+          }
+        }
+      ))
     }
     const toPromise = [];
     for (const bill of updatedBills) {

@@ -21,9 +21,10 @@ class AgendaRepo extends BaseRepo<Agenda> {
     const chunks = _.chunk(agendasList, 200);
     const allAgendas: any[] = [];
     for (const chunk of chunks) {
+      logger.info(`Fetching ${chunk.length} agendas out of ${agendasList.length}`);
       const agendas = await this.arrangeAgendas(chunks);
       const data = await this.updateMany(agendas);
-      allAgendas.push(data);
+      allAgendas.push(...data);
     }
     const toPromise = allAgendas.map((agenda) => {
       return personRepo.findAndUpdate({ _id: agenda.initiator }, { $addToSet: { agendas: agenda._id } });
