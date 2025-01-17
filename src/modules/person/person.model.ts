@@ -2,6 +2,7 @@ import { ObjectId } from 'mongoose';
 import { prop, getModelForClass, Ref, modelOptions } from '@typegoose/typegoose';
 import { rolesEnum } from '../../types/roles.enum';
 import { Ministry } from '../ministry/ministry.model';
+import { Agenda } from '../agenda/agenda.model';
 
 class Role {
   @prop({ enum: rolesEnum })
@@ -108,6 +109,9 @@ export class Person {
 
   @prop({ type: [ CommitteeSessionSchema ] })
     committeeSessions?: CommitteeSessionSchema[];
+
+  @prop({ type: [ Agenda ] })
+    agendas?: Agenda[]
 
   @prop()
     knessetNum!: number;
