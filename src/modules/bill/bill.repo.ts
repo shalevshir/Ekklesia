@@ -144,6 +144,7 @@ class BillsRepo extends BaseRepo<Bill> {
       }
       await Promise.all(toPromise);
     }
+    logger.info(`Fetched ${ updatedBills.length } bills from knesset`);
     return updatedBills.map(this.mapUpsert);
   }
 
