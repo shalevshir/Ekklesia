@@ -8,7 +8,6 @@ import { connection } from '../../utils/db';
 import PersonModel from '../person/person.model';
 import logger from '../../utils/logger';
 import { getFileAsText, readCsv } from '../../utils/files.service';
-import embeddingService from '../../utils/embedding.service';
 import personRepo from '../person/person.repo';
 import path from 'path';
 import mainCategoryRepo from '../category/mainCategory.repo';
@@ -121,8 +120,12 @@ class BillsRepo extends BaseRepo<Bill> {
 
   async fetchBillsFromKnesset() {
     const billsData = await knessetApiService.getBills();
-    const arrangedBills = await this.arrangeBills(billsData);
-    const updatedBills = await this.updateMany(arrangedBills, { upsert: true });
+    const chunks = _.chunk(billsData, 200);
+    const updatedBills: any[] = [];
+    for(const chunk of chunks) {
+      const arrangedBills = await this.arrangeBills(chunk);
+      updatedBills.push(...await this.updateMany(arrangedBills, { upsert: true }));
+    }
     const toPromise = [];
     for (const bill of updatedBills) {
       for (const initiator of bill.initiators) {

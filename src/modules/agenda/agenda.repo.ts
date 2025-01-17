@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import BaseRepo from '../../abstracts/repo.abstract';
 import knessetApiService from '../../utils/knesset-api.service';
 import logger from '../../utils/logger';
@@ -17,9 +18,18 @@ class AgendaRepo extends BaseRepo<Agenda> {
     if (!agendasList || !agendasList.length) {
       return [];
     }
-    const agendas = await this.arrangeAgendas(agendasList);
-    const data = await this.updateMany(agendas, { upsert: true });
-    return data.map(this.mapUpsert);
+    const chunks = _.chunk(agendasList, 200);
+    const allAgendas: any[] = [];
+    for (const chunk of chunks) {
+      const agendas = await this.arrangeAgendas(chunks);
+      const data = await this.updateMany(agendas);
+      allAgendas.push(data);
+    }
+    const toPromise = allAgendas.map((agenda) => {
+      return personRepo.findAndUpdate({ _id: agenda.initiator }, { $addToSet: { agendas: agenda._id } });
+    });
+    await Promise.all(toPromise);
+    return allAgendas.map(this.mapUpsert);
   }
 
   async arrangeAgendas(agendasList: any[]): Promise<Agenda[]> {
