@@ -51,15 +51,15 @@ class AgendaRepo extends BaseRepo<Agenda> {
       const agendaDocuments = await knessetApiService.getAgendasDocuments(agendaId);
       agendas.push({
         originId: agendaId,
-        name: agenda.name,
-        classificationDesc: agenda.classificationDesc,
+        name: agenda.Name,
+        classificationDesc: agenda.ClassificationDesc,
         committee: committee?._id,
         type: agenda.SubTypeDesc,
         status: agenda?.KNS_Status?.Desc,
         initiator: initiator?._id,
         govRecommendation: agenda.GovRecommendationDesc,
         presidentDecisionDate: agenda.PresidentDecisionDate,
-        postponementReasonDesc: agenda.PostponementReasonDesc,
+        postponementReasonDesc: agenda.PostopenmentReasonDesc,
         minister: minister?.minister,
         knessetNum: agenda.KnessetNum,
         leadingAgenda: agenda.LeadingAgendaID,
@@ -68,7 +68,7 @@ class AgendaRepo extends BaseRepo<Agenda> {
           type: document.GroupTypeDesc,
         }))
       } as Agenda);
-      await wait(1000);
+      await wait(500);
     }
     return agendas;
   }
