@@ -18,7 +18,7 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
     super(CommitteeSessionModel);
   }
 
-  async fetchCommitteesSessions(committee: DocumentType<Committee>, entityId?: ObjectId, job:Job) {
+  async fetchCommitteesSessions(committee: DocumentType<Committee>, entityId?: ObjectId, job?:Job) {
     const committeesSessions = await knessetApiService.getCommitteeSessions(
       committee.originId,
       entityId
@@ -60,7 +60,7 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
       }
       await Promise.all(toPromise);
       // set the job progress
-      job.progress((chunkNumber / chunks.length) * 100);
+      job?.progress((chunkNumber / chunks.length) * 100);
     }
 
     const sessionsData = accumulatedData.map(this.mapUpsert);
