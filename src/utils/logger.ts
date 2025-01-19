@@ -15,7 +15,7 @@ const consoleTransport =
 const logtail = new Logtail(envVars.LOGTAIL_KEY as string);
 const logtailTransport = new LogtailTransport(logtail,{
   format:{
-    transform:(error => _.omit(error, ['config', 'request', 'context']) as any)
+    transform:(error => _.omit(error, ['config', 'request', 'response']) as any)
   }
 });
 if (envVars.NODE_ENV === 'production') {
