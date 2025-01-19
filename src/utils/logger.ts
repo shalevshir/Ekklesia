@@ -19,6 +19,9 @@ const logtailTransport = new LogtailTransport(logtail,{
   }
 });
 if (envVars.NODE_ENV === 'production') {
+  import('source-map-support').then((sms) => {
+    sms.install();
+  });
   transports.push(logtailTransport);
 } else {
   transports.push(consoleTransport);
