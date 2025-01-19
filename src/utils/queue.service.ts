@@ -7,9 +7,12 @@ class QueueService {
 
   constructor() {
     this.workerQueue = new Queue('workerQueue', envVars.REDISCLOUD_URL || 'redis://127.0.0.1:6379', {
-      limiter: {
-        max: 2,
-        duration: 60000
+      settings:{
+        stalledInterval: 900000,
+      },
+      limiter:{
+        max: 1,
+        duration: 1000
       }
     });
     this.workerQueue.on('error', (error) => {
@@ -21,8 +24,8 @@ class QueueService {
     await this.workerQueue.process(name, callback);
   }
 
-  async add(name: string, data?: any) {
-    await this.workerQueue.add(name, data);
+  async add(name: string, data?: any, delay?:number) {
+    await this.workerQueue.add(name, data, { delay });
   }
 
   async close() {

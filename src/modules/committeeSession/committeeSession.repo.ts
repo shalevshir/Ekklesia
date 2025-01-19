@@ -10,6 +10,7 @@ import logger from '../../utils/logger';
 import _ from 'lodash';
 import { Person } from '../person/person.model';
 import committeeRepo from '../committee/committee.repo';
+import { Job } from 'bull';
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
@@ -17,7 +18,7 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
     super(CommitteeSessionModel);
   }
 
-  async fetchCommitteesSessions(committee: DocumentType<Committee>, entityId?: ObjectId) {
+  async fetchCommitteesSessions(committee: DocumentType<Committee>, entityId?: ObjectId, job:Job) {
     const committeesSessions = await knessetApiService.getCommitteeSessions(
       committee.originId,
       entityId
@@ -58,6 +59,8 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
         }
       }
       await Promise.all(toPromise);
+      // set the job progress
+      job.progress((chunkNumber / chunks.length) * 100);
     }
 
     const sessionsData = accumulatedData.map(this.mapUpsert);

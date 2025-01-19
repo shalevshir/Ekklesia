@@ -17,10 +17,10 @@ class CommitteeSessionWorker {
       // const todaysRuns = await runHistoryRepo.getTodayRuns(Entities.COMMITTEE_SESSION);
       // const committeesToExclude = todaysRuns.map(run => run.entityId);
       const committees = await committeeRepo.find({});
-      
+      const i = 0;
       for (const committee of committees) {
         logger.info({ message: 'Running fetching committee sessions', committeeId: committee._id });
-        queueService.add('updateCommittee', { committeeId: committee._id });
+        queueService.add('updateCommittee', { committeeId: committee._id }, i * 900000);
         await wait(120);
       }
       logger.info('Fetching committees sessions process finished');
@@ -41,7 +41,7 @@ class CommitteeSessionWorker {
     try { 
       const committee = await committeeRepo.model.findById(committeeId) as DocumentType<Committee>;
       logger.info({ message: 'Fetch committees sessions process started', jobId: job.id, committeeId: committeeId });
-      const data = await committeeSessionRepo.fetchCommitteesSessions(committee, run?.entityId);
+      const data = await committeeSessionRepo.fetchCommitteesSessions(committee, run?.entityId, job);
       logger.info('Fetching committees sessions process finished');
       await run.success({ message: 'Fetch committees sessions process finished', data });
       done();
