@@ -22,19 +22,24 @@ async function getFileAsHtml(url: string): Promise<string> {
 }
 
 async function getFileAsText(url: string): Promise<string | undefined> {
-  const response = await downloadAndSaveFile(url);
-  let data;
-  if (response.endsWith('.docx') || response.endsWith('.doc')) {
-    data = await extractTextFromDocx(response);
-  } else if (response.endsWith('.pdf')) {
-    data = await extractTextFromPdf(response);
-  }
-  fs.unlink(response, (err) => {
-    if (err) {
-      logger.error('Error deleting file:', err);
+  try {
+    const response = await downloadAndSaveFile(url);
+    let data;
+    if (response.endsWith('.docx') || response.endsWith('.doc')) {
+      data = await extractTextFromDocx(response);
+    } else if (response.endsWith('.pdf')) {
+      data = await extractTextFromPdf(response);
     }
-  });
-  return data;
+    fs.unlink(response, (err) => {
+      if (err) {
+        logger.error('Error deleting file:', err);
+      }
+    });
+    return data;
+  } catch (error) {
+    logger.error('Error processing file:', error);
+    throw error;
+  }
 }
 
 async function getFileAsDocument(link:string):Promise<Document[]>{
