@@ -27,33 +27,40 @@ class CommitteeSessionsRepo extends BaseRepo<CommitteeSession> {
       return [];
     }
     logger.info( `Fetched ${ committeesSessions.length } sessions` );
-    const arrangedCommitteesSessions = await this.arrangeCommitteesSessions(
-      committee,
-      committeesSessions
-    );
-
-    const data = await this.updateMany(arrangedCommitteesSessions, { upsert: true });
-    const toPromise = [];
-    for (const session of data) {
-      const attendeesIds = session.attendees.map((attendee: any) => ({
-        personId: attendee.person._id,
-        role: attendee.role
-      }));
-
-      for (const attendee of attendeesIds) {
-        toPromise.push(personRepo.model.findByIdAndUpdate(attendee.personId, {
-          $push: {
-            committeeSessions: {
-              _id: session._id,
-              role: attendee.role
-            }
-          }
+    const chunks = _.chunk(committeesSessions, 50)
+    let chunkNumber = 1;
+    const accumulatedData: any[] = [];
+    for (const chunk of chunks) {
+      logger.info(`Arranging chunk #${ chunkNumber++ } out of ${ chunks.length }`);
+      const arrangedCommitteesSessions = await this.arrangeCommitteesSessions(
+        committee,
+        chunk
+      );
+  
+      const data = await this.updateMany(arrangedCommitteesSessions, { upsert: true });
+      accumulatedData.push(...data);
+      const toPromise = [];
+      for (const session of data) {
+        const attendeesIds = session.attendees.map((attendee: any) => ({
+          personId: attendee.person._id,
+          role: attendee.role
         }));
+  
+        for (const attendee of attendeesIds) {
+          toPromise.push(personRepo.model.findByIdAndUpdate(attendee.personId, {
+            $push: {
+              committeeSessions: {
+                _id: session._id,
+                role: attendee.role
+              }
+            }
+          }));
+        }
       }
+      await Promise.all(toPromise);
     }
-    await Promise.all(toPromise);
 
-    const sessionsData = data.map(this.mapUpsert);
+    const sessionsData = accumulatedData.map(this.mapUpsert);
     logger.info(`Updated ${ sessionsData.length } sessions`);
     const sessionIds = _.chain(sessionsData).
       filter((session) => session.created).map((session) => session.id).value();
