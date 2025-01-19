@@ -2,6 +2,7 @@ import { Logtail } from '@logtail/node';
 import winston, { transport } from 'winston';
 import { envVars } from './envVars';
 import { LogtailTransport } from '@logtail/winston';
+import _ from 'lodash';
 
 const transports: transport[] = [];
 const consoleTransport =
@@ -12,7 +13,11 @@ const consoleTransport =
     )
   });
 const logtail = new Logtail(envVars.LOGTAIL_KEY as string);
-const logtailTransport = new LogtailTransport(logtail);
+const logtailTransport = new LogtailTransport(logtail,{
+  format:{
+    transform:(error => _.omit(error, ['config', 'request', 'context']) as any)
+  }
+});
 if (envVars.NODE_ENV === 'production') {
   transports.push(logtailTransport);
 } else {
