@@ -57,6 +57,7 @@ export class RunHistory {
     const updateData = {
       status: RunStatuses.FAILED,
       error: error.message,
+      log: { stack:error.stack },
       endTime: endDate,
       duration
     };
