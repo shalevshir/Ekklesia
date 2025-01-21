@@ -40,6 +40,9 @@ class CommitteeSessionWorker {
     const run = await runHistoryRepo.initiateRunHistory(Entities.COMMITTEE_SESSION, committeeId);
     try { 
       const committee = await committeeRepo.model.findById(committeeId) as DocumentType<Committee>;
+      if(!committee) {
+        throw new Error(`Committee with id "${committeeId}" not found`);
+      }
       logger.info({ message: 'Fetch committees sessions process started', jobId: job.id, committeeId: committeeId });
       const data = await committeeSessionRepo.fetchCommitteesSessions(committee, run?.entityId, job);
       logger.info('Fetching committees sessions process finished');
