@@ -1,5 +1,3 @@
-import 'newrelic';
-
 import queryWorker from './modules/query/query.worker';
 import { connectDB } from './utils/db';
 import logger from './utils/logger';

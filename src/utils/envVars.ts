@@ -16,6 +16,7 @@ enum EnvVarEnum {
 
 // Load environment variables in non-production environments
 if (process.env.NODE_ENV !== 'production') {
+  require('newrelic');
   require('dotenv').config();
 }
 
