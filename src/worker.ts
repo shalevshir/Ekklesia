@@ -37,6 +37,9 @@ const startWorker = async () => {
   // Agenda
   queueService.process('fetchAgendas', agendaWorker.fetchAgendas);
 
+  //Summarize
+  queueService.process('summarizeBills', billWorker.summarizeBills);
+
 
   //categories
   queueService.process('saveCategories', async (job: Job, done: DoneCallback) => {

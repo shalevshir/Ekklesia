@@ -4,6 +4,8 @@ import committeeRepo from '../committee/committee.repo';
 import billRepo from './bill.repo';
 import runHistoryRepo from '../runHistory/runHistory.repo';
 import { Entities } from '../../types/entities.enum';
+import { runSummarize } from '../../graphs/summarizeGraph';
+import { getFileAsDocument } from '../../utils/files.service';
 
 
 class billWorker {
@@ -78,6 +80,27 @@ class billWorker {
       return true;
     } catch (error) {
       logger.error('Error in updateBillsCategories', error);
+      throw error;
+    }
+  }
+
+  async summarizeBills(job:Job, done: DoneCallback) {
+    try{
+      logger.info({ message: 'Summarize bills process started', jobId: job.id });
+      done();
+      const typesToIgnore = ['חוק - נוסח לא רשמי', 'חוק - פרסום ברשומות', 'הצעת חוק לקריאה השנייה והשלישית','החלטת ממשלה' ]
+      const billsToSummarize = await billRepo.find({ mainCategories:{$ne:[]}, summary: null });
+      for (const bill of billsToSummarize) {
+        logger.info({ message: 'Summarize bill', billId: bill._id });
+        const link = bill.billDocuments?.find(doc => !typesToIgnore.includes(doc.type))?.url;
+        if(!link) continue;
+        const doc = await getFileAsDocument(link)
+        const summary = await runSummarize(doc);
+        await billRepo.update({ _id: bill._id }, { summary: summary.finalSummary });
+        logger.info({ message: 'Summarize bill finished', billId: bill._id });
+      }
+    } catch (error) {
+      logger.error('Error in summarizeBills', error);
       throw error;
     }
   }

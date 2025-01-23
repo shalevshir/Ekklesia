@@ -7,9 +7,8 @@ import { StateGraph, Annotation, Send } from "@langchain/langgraph";
 import { gpt4oMini as llm } from "../abstracts/models";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { pull } from "langchain/hub";
-import { TokenTextSplitter } from "@langchain/textsplitters";
-import { modelNames } from "mongoose";
-import { z } from "zod";
+import { CharacterTextSplitter } from "@langchain/textsplitters";
+import { cleanDocText } from "../utils/files.service";
 
 let tokenMax = 1000;
 
@@ -57,12 +56,14 @@ const generateSummary = async (
 
 const splitDoc = async (state: typeof OverallState.State) => {
   const docs = state.contents;
-  const textSplitter = new TokenTextSplitter({
-    chunkSize: 1000,
-    chunkOverlap: 0,
+  const textSplitter = new CharacterTextSplitter({
+    chunkSize: 1500,
+    chunkOverlap: 200,
+    separator: '\n\n'
   });
   
   const splitDocs = await textSplitter.splitDocuments(docs);
+  cleanDocText(splitDocs);
   console.log(`Generated ${splitDocs.length} documents.`);
   if(splitDocs.length === 0){
     return {finalSummary: "No documents to summarize"};
