@@ -46,6 +46,9 @@ class AirtableTable<T extends FieldSet> {
   async create(record: T) {
     return this.table.create(record);
   }
+  async getById(id: string) {
+    return this.table.find(id);
+  }
 
   async fetch(filter: airtable.SelectOptions<T> = {}, populate?: { field: string, table: TableNames }) {
     const records = await this.table.select(filter).all();

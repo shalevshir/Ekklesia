@@ -69,8 +69,9 @@ class billWorker {
     }
   }
 
-  async updateBillsCategories() {
+  async updateBillsCategories(job: Job, done: DoneCallback) {
     try {
+      done()
       logger.info('Update bills categories process started');
       await billRepo.updateBillsCategories();
       logger.info('Update bills categories process finished');

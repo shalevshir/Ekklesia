@@ -1,17 +1,17 @@
-import { DocumentType } from '@typegoose/typegoose';
+import { BillRecord } from './../airtable/types/bill.airtable-type';
 import BaseRepo from '../../abstracts/repo.abstract';
-import BillModel, { Bill, BillStatuses, BillStatusesOrder, Vote } from './bill.model';
+import BillModel, { Bill,  BillStatuses, BillStatusesOrder, Vote } from './bill.model';
 import knessetApiService from '../../utils/knesset-api.service';
 import committeeRepo from '../committee/committee.repo';
 import _ from 'lodash';
 import { connection } from '../../utils/db';
 import PersonModel from '../person/person.model';
 import logger from '../../utils/logger';
-import { getFileAsText, readCsv } from '../../utils/files.service';
 import personRepo from '../person/person.repo';
-import path from 'path';
 import mainCategoryRepo from '../category/mainCategory.repo';
-import subCategoryRepo from '../category/subCategory.repo';
+import airtableService, { TableNames } from '../airtable/airtable.service';
+import { Document } from 'mongoose';
+import { SubCategoryRecord } from '../airtable/types/subCategory.airtable-type';
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 class BillsRepo extends BaseRepo<Bill> {
@@ -261,40 +261,58 @@ class BillsRepo extends BaseRepo<Bill> {
   }
 
   async updateBillsCategories() {
-    const bills = await this.model.find({ categories: { $ne: null } }).lean();
-    const pathToFile = path.join(__dirname, '../../..', 'categorized.bills.csv');
-    const data = await readCsv(pathToFile);
+    // const pathToFile = path.join(__dirname, '../../..', 'categorized.bills.csv');
+    // const data = await readCsv(pathToFile);
+    const billsInstance = airtableService.getTableInstance<BillRecord>(TableNames.Bills);
+    const data = await billsInstance.fetch({filterByFormula: '{is Exist}=1'});
+    const originIds = data.map((item) => item.get('originId'));
+    const bills = await this.model.find({originId:originIds }) as Document<Bill>[];  
+    const categoriesCollection = await mainCategoryRepo.find({},{populate:'subCategories'});
+    const subCategoriesInstance = await airtableService.getTableInstance<SubCategoryRecord>(TableNames.SubCategories);
     logger.info({ message: `Updating categories for ${ bills.length } bills ` });
     let billNumber = 1;
     const toPromise = [];
     for (const bill of bills) {
       logger.info({ message: `Updating bill #${ billNumber } out of ${ bills.length }` , billId: bill._id });
-      const billData = data.find((data) => +data.originId === +bill.originId);
+      const billData = data.find((dataItem) => +dataItem.get('originId') === +bill.get('originId'));
       if (!billData) {
         logger.info(`No categories found for bill #${ billNumber } out of ${ bills.length }`, { billId: bill._id });
         billNumber++;
         continue;
       }
-      let categoryText = billData.categories;
-      if (billData['re-categorize']) {
-        categoryText = billData['re-categorize'];
-      }
       const mainCategoriesToSet = [];
       const subCategoriesToSet = [];
-      const categories = categoryText.split(',').map((category: string) => category.trim());
-
+      const categories = billData.get("categoriesNames");
+      // if (billData['re-categorize']) {
+      //   categoryText = billData['re-categorize'];
+      // }
       for (const category of categories) {
-        const categoryObj = await mainCategoryRepo.findOrCreate({ name: category, isMainCategory: true });
-        mainCategoriesToSet.push(categoryObj.doc._id);
-      };
-      const subCategoriesText = billData.subCategory;
-      if (subCategoriesText) {
-        const subCategories = subCategoriesText.split(',').map((category: string) => category.trim());
-        for (const subCategory of subCategories) {
-          const categoryObj = await subCategoryRepo.findOrCreate({ name: subCategory, isMainCategory: false });
-          subCategoriesToSet.push(categoryObj.doc._id);
+        const categoryObj = categoriesCollection.find((categoryItem) => categoryItem.name === category);
+        if(!categoryObj) continue
+        
+        mainCategoriesToSet.push(categoryObj._id);
+        
+        const subCategories = billData.get('Sub Categories');
+        for (const subCategory of subCategories??[]) {
+          const subCategoryData = await subCategoriesInstance.getById(subCategory);
+          const subCategoriesList = categoryObj.subCategories as unknown as SubCategoryRecord[];
+          const subCategoryObj = subCategoriesList?.find((subCategoryItem) => subCategoryItem.name === subCategoryData.get('name'));
+          if(!subCategoryObj) {
+            for(const categoryItem of categoriesCollection){
+              const subCategoriesList = categoryItem.subCategories as unknown as SubCategoryRecord[];
+              const subCategoryObj = subCategoriesList?.find((subCategoryItem) => subCategoryItem.name === subCategoryData.get('name'));
+              if(subCategoryObj){
+                subCategoriesToSet.push(subCategoryObj._id);
+                break;
+              }
+            }
+          }
+          if(subCategoryObj){
+            subCategoriesToSet.push(subCategoryObj._id);
+          };  
         };
-      }
+      };
+
       toPromise.push(this.model.findOneAndUpdate({ _id: bill._id },
         { mainCategories: mainCategoriesToSet, subCategories: subCategoriesToSet })
       );
