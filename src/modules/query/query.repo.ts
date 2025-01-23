@@ -1,9 +1,14 @@
+import mainCategoryRepo from '../category/mainCategory.repo'
 import BaseRepo from '../../abstracts/repo.abstract';
 import QueryModel, { Query } from './query.model';
 import knessetApiService from '../../utils/knesset-api.service';
 import personRepo from '../person/person.repo';
 import ministryRepo from '../ministry/ministry.repo';
 import logger from '../../utils/logger';
+import airtableService, { TableNames } from '../airtable/airtable.service';
+import { QueryRecord } from '../airtable/types/query.airtable-type';
+import { Document } from 'mongoose';
+import { SubCategoryRecord } from '../airtable/types/subCategory.airtable-type';
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 class QueryRepo extends BaseRepo<Query> {
@@ -111,6 +116,62 @@ class QueryRepo extends BaseRepo<Query> {
 
     const query = await this.findOne({ '$or': [ { 'categories': { '$exists': false } }, { 'categories': [] } ] }, { populate: 'replyMinistry' });
     return query;
+  }
+
+  async updateQueriesCategories() {
+    const queriesInstance = airtableService.getTableInstance<QueryRecord>(TableNames.Queries);
+    const data = await queriesInstance.fetch({filterByFormula: '{is Exist}=1'});
+    const originIds = data.map((item) => item.get('originId'));
+    const queries = await this.model.find({originId:originIds }) as Document<Query>[];  
+    const categoriesCollection = await mainCategoryRepo.find({},{populate:'subCategories'});
+    const subCategoriesInstance = await airtableService.getTableInstance<SubCategoryRecord>(TableNames.SubCategories);
+    logger.info({ message: `Updating categories for ${ queries.length } queries ` });
+    let queryNumber = 1;
+    const toPromise = [];
+    for (const query of queries) {
+      logger.info({ message: `Updating query #${ queryNumber } out of ${ queries.length }` , queryId: query._id });
+      const queryData = data.find((dataItem) => +dataItem.get('originId') === +query.get('originId'));
+      if (!queryData) {
+        logger.info(`No categories found for query #${ queryNumber } out of ${ queries.length }`, { queryId: query._id });
+        queryNumber++;
+        continue;
+      }
+      const mainCategoriesToSet = [];
+      const subCategoriesToSet = [];
+      const categories = queryData.get("categoriesNames");
+      for (const category of categories) {
+        const categoryObj = categoriesCollection.find((categoryItem) => categoryItem.name === category);
+        if(!categoryObj) continue
+        
+        mainCategoriesToSet.push(categoryObj._id);
+        
+        const subCategories = queryData.get('SubCategories');
+        for (const subCategory of subCategories??[]) {
+          const subCategoryData = await subCategoriesInstance.getById(subCategory);
+          const subCategoriesList = categoryObj.subCategories as unknown as SubCategoryRecord[];
+          const subCategoryObj = subCategoriesList?.find((subCategoryItem) => subCategoryItem.name === subCategoryData.get('name'));
+          if(!subCategoryObj) {
+            for(const categoryItem of categoriesCollection){
+              const subCategoriesList = categoryItem.subCategories as unknown as SubCategoryRecord[];
+              const subCategoryObj = subCategoriesList?.find((subCategoryItem) => subCategoryItem.name === subCategoryData.get('name'));
+              if(subCategoryObj){
+                subCategoriesToSet.push(subCategoryObj._id);
+                break;
+              }
+            }
+          }
+          if(subCategoryObj){
+            subCategoriesToSet.push(subCategoryObj._id);
+          };  
+        };
+      };
+
+      toPromise.push(this.model.findOneAndUpdate({ _id: query._id },
+        { mainCategories: mainCategoriesToSet, subCategories: subCategoriesToSet })
+      );
+      queryNumber++;
+    }
+    await Promise.all(toPromise);
   }
 
   // async addCategoryToQuery(queryId: number, categories: any[]) {

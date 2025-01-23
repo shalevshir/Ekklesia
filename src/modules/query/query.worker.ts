@@ -20,6 +20,19 @@ class queriesWorker {
       await run.fail(error as Error);
     }
   }
+
+  async updateQueriesCategories(job: Job, done: DoneCallback) {
+    try {
+      done()
+      logger.info('Update Queries categories process started');
+      await queryRepo.updateQueriesCategories();
+      logger.info('Update Queries categories process finished');
+      return true;
+    } catch (error) {
+      logger.error('Error in updateQueriesCategories', error);
+      throw error;
+    }
+  }
 }
 
 export default new queriesWorker();

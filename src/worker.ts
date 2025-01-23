@@ -23,6 +23,7 @@ const startWorker = async () => {
 
   // Query
   queueService.process('fetchQueries', queryWorker.fetchQueries);
+  queueService.process('updateQueriesCategories', queryWorker.updateQueriesCategories);
 
   // Bill
   queueService.process('fetchBills', billWorker.fetchBills);
