@@ -53,10 +53,10 @@ async function getFileAsDocument(link:string):Promise<Document[]>{
   } 
   
   const doc = await docLoader.load()
-  return doc ? cleanDocText(doc) : [];
+  return doc
 }
 
-function cleanDocText(doc:Document[]): Document[] {
+export function cleanDocText(doc:Document[]): Document[] {
   return doc.map(d => {
     d.pageContent = d.pageContent.replace(/(\r\n|\n|\r)/gm, " ");
     return d;
